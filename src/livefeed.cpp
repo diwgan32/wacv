@@ -109,7 +109,7 @@ int main(int argc, const char *argv[])
     cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
     string cascadeName;
-    string inputName = "../../../../PaSCSamples/02463d3666.mp4";
+    string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3666.mp4";
     bool isInputImage = false;
     bool isInputVideo = true;
     bool isInputCamera = false;
@@ -121,7 +121,7 @@ int main(int argc, const char *argv[])
         return cerr << "ERROR: Could not load cascade classifier \"" << cascadeName << "\"" << endl, help(), -1;
     }
 
-
+	
     VideoCapture capture;
     Mat image;
 	capture.open(inputName);
@@ -131,7 +131,7 @@ int main(int argc, const char *argv[])
 		capture.open(inputName);
 	}
 
-
+	double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
     namedWindow("result", 1);
 
     Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
@@ -161,7 +161,7 @@ int main(int argc, const char *argv[])
         (image.empty() ? frame : image).copyTo(frame_cpu);
         frame_gpu.upload(image.empty() ? frame : image);
 
-        convertAndResize(frame_gpu, gray_gpu, resized_gpu, scaleFactor);
+        convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
 
 
         TickMeter tm;
@@ -173,7 +173,7 @@ int main(int argc, const char *argv[])
             cascade_gpu.findLargestObject = findLargestObject;
 
             detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-                                                         1.1, 2, Size(50, 50));
+                                                         1.1, 2, Size(10, 10));
             facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
         }
         
@@ -208,7 +208,7 @@ int main(int argc, const char *argv[])
         cout << endl;
 
         cvtColor(resized_cpu, frameDisp, CV_GRAY2BGR);
-        displayState(frameDisp, helpScreen, useGPU, findLargestObject, filterRects, fps);
+       
         imshow("result", frameDisp);
 
         char key = (char)waitKey(5);
