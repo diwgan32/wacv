@@ -3,127 +3,127 @@
 #pragma warning(disable : 4100)
 #endif
 
-
-#include <iostream>
-#include <iomanip>
-#include "opencv2/contrib/contrib.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/gpu/gpu.hpp"
-
+#include "includes.h"
+#include "Group.h"
+#include "mp_test.h"
+#include "segment.h"
+#include "utils.h"
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
+#define NUM_DICT 3
+#define NUM_SUBJECTS 3
+#define COLS 3
+#define ROWS 400
 
 
 static void help()
 {
-    cout << "Usage: ./cascadeclassifier_gpu \n\t--cascade <cascade_file>\n\t(<image>|--video <video>|--camera <camera_id>)\n"
-            "Using OpenCV version " << CV_VERSION << endl << endl;
+	cout << "Usage: ./cascadeclassifier_gpu \n\t--cascade <cascade_file>\n\t(<image>|--video <video>|--camera <camera_id>)\n"
+		"Using OpenCV version " << CV_VERSION << endl << endl;
 }
 
 
 template<class T>
 void convertAndResize(const T& src, T& gray, T& resized, double scale)
 {
-    if (src.channels() == 3)
-    {
-        cvtColor( src, gray, CV_BGR2GRAY );
-    }
-    else
-    {
-        gray = src;
-    }
+	if (src.channels() == 3)
+	{
+		cvtColor( src, gray, CV_BGR2GRAY );
+	}
+	else
+	{
+		gray = src;
+	}
 
-    Size sz(cvRound(gray.cols * scale), cvRound(gray.rows * scale));
+	Size sz(cvRound(gray.cols * scale), cvRound(gray.rows * scale));
 
-    if (scale != 1)
-    {
-        resize(gray, resized, sz);
-    }
-    else
-    {
-        resized = gray;
-    }
+	if (scale != 1)
+	{
+		resize(gray, resized, sz);
+	}
+	else
+	{
+		resized = gray;
+	}
 }
 
 
 static void matPrint(Mat &img, int lineOffsY, Scalar fontColor, const string &ss)
 {
-    int fontFace = FONT_HERSHEY_DUPLEX;
-    double fontScale = 0.8;
-    int fontThickness = 2;
-    Size fontSize = cv::getTextSize("T[]", fontFace, fontScale, fontThickness, 0);
+	int fontFace = FONT_HERSHEY_DUPLEX;
+	double fontScale = 0.8;
+	int fontThickness = 2;
+	Size fontSize = cv::getTextSize("T[]", fontFace, fontScale, fontThickness, 0);
 
-    Point org;
-    org.x = 1;
-    org.y = 3 * fontSize.height * (lineOffsY + 1) / 2;
-    putText(img, ss, org, fontFace, fontScale, CV_RGB(0,0,0), 5*fontThickness/2, 16);
-    putText(img, ss, org, fontFace, fontScale, fontColor, fontThickness, 16);
+	Point org;
+	org.x = 1;
+	org.y = 3 * fontSize.height * (lineOffsY + 1) / 2;
+	putText(img, ss, org, fontFace, fontScale, CV_RGB(0,0,0), 5*fontThickness/2, 16);
+	putText(img, ss, org, fontFace, fontScale, fontColor, fontThickness, 16);
 }
 
 
 static void displayState(Mat &canvas, bool bHelp, bool bGpu, bool bLargestFace, bool bFilter, double fps)
 {
-    Scalar fontColorRed = CV_RGB(255,0,0);
-    Scalar fontColorNV  = CV_RGB(118,185,0);
+	Scalar fontColorRed = CV_RGB(255,0,0);
+	Scalar fontColorNV  = CV_RGB(118,185,0);
 
-    ostringstream ss;
-    ss << "FPS = " << setprecision(1) << fixed << fps;
-    matPrint(canvas, 0, fontColorRed, ss.str());
-    ss.str("");
-    ss << "[" << canvas.cols << "x" << canvas.rows << "], " <<
-        (bGpu ? "GPU, " : "CPU, ") <<
-        (bLargestFace ? "OneFace, " : "MultiFace, ") <<
-        (bFilter ? "Filter:ON" : "Filter:OFF");
-    matPrint(canvas, 1, fontColorRed, ss.str());
+	ostringstream ss;
+	ss << "FPS = " << setprecision(1) << fixed << fps;
+	matPrint(canvas, 0, fontColorRed, ss.str());
+	ss.str("");
+	ss << "[" << canvas.cols << "x" << canvas.rows << "], " <<
+		(bGpu ? "GPU, " : "CPU, ") <<
+		(bLargestFace ? "OneFace, " : "MultiFace, ") <<
+		(bFilter ? "Filter:ON" : "Filter:OFF");
+	matPrint(canvas, 1, fontColorRed, ss.str());
 
-    // by Anatoly. MacOS fix. ostringstream(const string&) is a private
-    // matPrint(canvas, 2, fontColorNV, ostringstream("Space - switch GPU / CPU"));
-    if (bHelp)
-    {
-        matPrint(canvas, 2, fontColorNV, "Space - switch GPU / CPU");
-        matPrint(canvas, 3, fontColorNV, "M - switch OneFace / MultiFace");
-        matPrint(canvas, 4, fontColorNV, "F - toggle rectangles Filter");
-        matPrint(canvas, 5, fontColorNV, "H - toggle hotkeys help");
-        matPrint(canvas, 6, fontColorNV, "1/Q - increase/decrease scale");
-    }
-    else
-    {
-        matPrint(canvas, 2, fontColorNV, "H - toggle hotkeys help");
-    }
+	// by Anatoly. MacOS fix. ostringstream(const string&) is a private
+	// matPrint(canvas, 2, fontColorNV, ostringstream("Space - switch GPU / CPU"));
+	if (bHelp)
+	{
+		matPrint(canvas, 2, fontColorNV, "Space - switch GPU / CPU");
+		matPrint(canvas, 3, fontColorNV, "M - switch OneFace / MultiFace");
+		matPrint(canvas, 4, fontColorNV, "F - toggle rectangles Filter");
+		matPrint(canvas, 5, fontColorNV, "H - toggle hotkeys help");
+		matPrint(canvas, 6, fontColorNV, "1/Q - increase/decrease scale");
+	}
+	else
+	{
+		matPrint(canvas, 2, fontColorNV, "H - toggle hotkeys help");
+	}
 }
 
 
 int main(int argc, const char *argv[])
 {
-   
-    if (getCudaEnabledDeviceCount() == 0)
-    {
-			int x;
+
+	if (getCudaEnabledDeviceCount() == 0)
+	{
+		int x;
 		cin >> x;
-        return cerr << "No GPU found or the library is compiled without GPU support" << endl, -1;
-    }
+		return cerr << "No GPU found or the library is compiled without GPU support" << endl, -1;
+	}
 
-    cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
+	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
-    string cascadeName;
-    string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3666.mp4";
-    bool isInputImage = false;
-    bool isInputVideo = true;
-    bool isInputCamera = false;
+	string cascadeName;
+	string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3562.mp4";
+	bool isInputImage = false;
+	bool isInputVideo = true;
+	bool isInputCamera = false;
 	cascadeName = "HaarCascades\\haarcascade_frontalface_alt.xml";
-    CascadeClassifier_GPU cascade_gpu;
+	CascadeClassifier_GPU cascade_gpu;
 	CascadeClassifier cascade_cpu;
-    if (!cascade_gpu.load(cascadeName))
-    {
-        return cerr << "ERROR: Could not load cascade classifier \"" << cascadeName << "\"" << endl, help(), -1;
-    }
+	if (!cascade_gpu.load(cascadeName))
+	{
+		return cerr << "ERROR: Could not load cascade classifier \"" << cascadeName << "\"" << endl, help(), -1;
+	}
 
-	
-    VideoCapture capture;
-    Mat image;
+
+	VideoCapture capture;
+	Mat image;
 	capture.open(inputName);
 	if (!capture.isOpened())  // if not success, exit program
 	{
@@ -132,117 +132,167 @@ int main(int argc, const char *argv[])
 	}
 
 	double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
-    namedWindow("result", 1);
+	namedWindow("result", 1);
 
-    Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
-    vector<Rect> facesBuf_cpu;
+	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
+	vector<Rect> facesBuf_cpu;
 
-    GpuMat frame_gpu, gray_gpu, resized_gpu, facesBuf_gpu;
+	GpuMat frame_gpu, gray_gpu, resized_gpu, facesBuf_gpu;
 
-    /* parameters */
-    bool useGPU = true;
-    double scaleFactor = .5;
-    bool findLargestObject = false;
-    bool filterRects = false;
-    bool helpScreen = false;
-
-    int detections_num;
-    for (;;)
-    {
-        if (isInputCamera || isInputVideo)
-        {
-            capture >> frame;
-            if (frame.empty())
-            {
-                break;
-            }
-        }
-
-        (image.empty() ? frame : image).copyTo(frame_cpu);
-        frame_gpu.upload(image.empty() ? frame : image);
-
-        convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
+	/* parameters */
+	bool useGPU = true;
+	double scaleFactor = .5;
+	bool findLargestObject = false;
+	bool filterRects = false;
+	bool helpScreen = false;
+	Groupings g;
+	int detections_num;
 
 
-        TickMeter tm;
-        tm.start();
+	bool flag = false;
+	int var = 0;
+	bool isSpaceBarPressed = false;
+	bool makeInitialSegmentsFlag = false;
 
-        if (useGPU)
-        {
-            //cascade_gpu.visualizeInPlace = true;
-            cascade_gpu.findLargestObject = findLargestObject;
+	int numtimes = 0;
+	Mat data;
+	Mat temp;
+	int numSegments = 2;
 
-            detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-                                                         1.1, 2, Size(10, 10));
-            facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
-        }
-        
-        if (useGPU)
-        {
-            resized_gpu.download(resized_cpu);
+	Mat faceROI;
+	Mat faceROI_resize;
 
-             for (int i = 0; i < detections_num; ++i)
-             {
-                rectangle(resized_cpu, faces_downloaded.ptr<cv::Rect>()[i], Scalar(255));
-             }
-        }
+	for (;;)
+	{
+		if (isInputCamera || isInputVideo)
+		{
+			capture >> frame;
+			if (frame.empty())
+			{
+				g = reset(data, g, numSegments);
+				std::ofstream ifs("data.txt");
 
-        tm.stop();
-        double detectionTime = tm.getTimeMilli();
-        double fps = 1000 / detectionTime;
+				for(int i = 0; i<numSegments; i++){
+					ifs << "bestsgt{" << i+1 <<  "} = [";
+					for(int j = 0; j<g.segments[i].size(); j++){
+						ifs <<g.segments[i].at(j)+1 << " ";
+					}
+					ifs << "];";
+					ifs << endl;
+				}
 
-        //print detections to console
-        cout << setfill(' ') << setprecision(2);
-        cout << setw(6) << fixed << fps << " FPS, " << detections_num << " det";
-        if ((filterRects || findLargestObject) && detections_num > 0)
-        {
-            Rect *faceRects = useGPU ? faces_downloaded.ptr<Rect>() : &facesBuf_cpu[0];
-            for (int i = 0; i < min(detections_num, 2); ++i)
-            {
-                cout << ", [" << setw(4) << faceRects[i].x
-                     << ", " << setw(4) << faceRects[i].y
-                     << ", " << setw(4) << faceRects[i].width
-                     << ", " << setw(4) << faceRects[i].height << "]";
-            }
-        }
-        cout << endl;
+				ifs.close();
 
-        cvtColor(resized_cpu, frameDisp, CV_GRAY2BGR);
-       
-        imshow("result", frameDisp);
 
-        char key = (char)waitKey(5);
-        if (key == 27)
-        {
-            break;
-        }
+				MATFile *pmat;
+				mxArray *pa1;
 
-        switch (key)
-        {
-        case ' ':
-            useGPU = !useGPU;
-            break;
-        case 'm':
-        case 'M':
-            findLargestObject = !findLargestObject;
-            break;
-        case 'f':
-        case 'F':
-            filterRects = !filterRects;
-            break;
-        case '1':
-            scaleFactor *= 1.05;
-            break;
-        case 'q':
-        case 'Q':
-            scaleFactor /= 1.05;
-            break;
-        case 'h':
-        case 'H':
-            helpScreen = !helpScreen;
-            break;
-        }
-    }
+				pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
+				string filename = "Subjects\\"+itos(7)+".mat";
+				pmat = matOpen(filename.c_str(), "w");
 
-    return 0;
+				double * data1;
+				data1 = new double[numtimes*400];
+				int count = 0;
+				for(int i = 0; i<numtimes; i++){
+					for(int j = 0; j<400; j++){
+						data1[count] = data.at<double>(j, i);
+
+						count++;
+					}
+				}
+
+				memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
+				int status = matPutVariable(pmat, "ImgData1", pa1);
+				if (status != 0) {
+
+					printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+					return(EXIT_FAILURE);
+				}  
+
+				mxDestroyArray(pa1);
+				matClose(pmat);
+				break;
+			}
+		}
+
+		(image.empty() ? frame : image).copyTo(frame_cpu);
+		frame_gpu.upload(image.empty() ? frame : image);
+
+		convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
+
+
+		TickMeter tm;
+		tm.start();
+
+		if (useGPU)
+		{
+			//cascade_gpu.visualizeInPlace = true;
+			cascade_gpu.findLargestObject = findLargestObject;
+
+			detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
+				1.1, 2, Size(10, 10));
+			facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
+		}
+
+		if (useGPU)
+		{
+			resized_gpu.download(resized_cpu);
+
+			for (int i = 0; i < detections_num; ++i)
+			{
+				rectangle(resized_cpu, faces_downloaded.ptr<cv::Rect>()[i], Scalar(255));
+				faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
+				flag = true;
+			}
+
+			
+		}
+
+
+		if(flag){
+			
+			resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+			if(numtimes == 0){
+				faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
+				data = data/255.0;
+			}else{
+				faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
+				temp = temp/255.0;
+
+				hconcat(data, temp, data);
+			}
+			numtimes++;
+
+			imshow("Otherframe", faceROI);
+
+
+			makeInitialSegmentsFlag = false;
+
+			if(numtimes == 10){
+				numSegments++;
+				g = seg(data, numSegments);
+
+			}
+
+			if(numtimes > 10 && (numtimes)%4 == 0){
+				g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
+			}
+
+			flag = false;
+
+
+
+		}
+		tm.stop();
+		double detectionTime = tm.getTimeMilli();
+		double fps = 1000 / detectionTime;
+		cout << fps << " fps" << endl;
+
+		imshow("result", resized_cpu);
+
+		char key = waitKey(30);
+	}
+
+	return 0;
 }
