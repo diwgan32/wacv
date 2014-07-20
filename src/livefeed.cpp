@@ -49,51 +49,6 @@ void convertAndResize(const T& src, T& gray, T& resized, double scale)
 }
 
 
-static void matPrint(Mat &img, int lineOffsY, Scalar fontColor, const string &ss)
-{
-	int fontFace = FONT_HERSHEY_DUPLEX;
-	double fontScale = 0.8;
-	int fontThickness = 2;
-	Size fontSize = cv::getTextSize("T[]", fontFace, fontScale, fontThickness, 0);
-
-	Point org;
-	org.x = 1;
-	org.y = 3 * fontSize.height * (lineOffsY + 1) / 2;
-	putText(img, ss, org, fontFace, fontScale, CV_RGB(0,0,0), 5*fontThickness/2, 16);
-	putText(img, ss, org, fontFace, fontScale, fontColor, fontThickness, 16);
-}
-
-
-static void displayState(Mat &canvas, bool bHelp, bool bGpu, bool bLargestFace, bool bFilter, double fps)
-{
-	Scalar fontColorRed = CV_RGB(255,0,0);
-	Scalar fontColorNV  = CV_RGB(118,185,0);
-
-	ostringstream ss;
-	ss << "FPS = " << setprecision(1) << fixed << fps;
-	matPrint(canvas, 0, fontColorRed, ss.str());
-	ss.str("");
-	ss << "[" << canvas.cols << "x" << canvas.rows << "], " <<
-		(bGpu ? "GPU, " : "CPU, ") <<
-		(bLargestFace ? "OneFace, " : "MultiFace, ") <<
-		(bFilter ? "Filter:ON" : "Filter:OFF");
-	matPrint(canvas, 1, fontColorRed, ss.str());
-
-	// by Anatoly. MacOS fix. ostringstream(const string&) is a private
-	// matPrint(canvas, 2, fontColorNV, ostringstream("Space - switch GPU / CPU"));
-	if (bHelp)
-	{
-		matPrint(canvas, 2, fontColorNV, "Space - switch GPU / CPU");
-		matPrint(canvas, 3, fontColorNV, "M - switch OneFace / MultiFace");
-		matPrint(canvas, 4, fontColorNV, "F - toggle rectangles Filter");
-		matPrint(canvas, 5, fontColorNV, "H - toggle hotkeys help");
-		matPrint(canvas, 6, fontColorNV, "1/Q - increase/decrease scale");
-	}
-	else
-	{
-		matPrint(canvas, 2, fontColorNV, "H - toggle hotkeys help");
-	}
-}
 
 
 int main(int argc, const char *argv[])
@@ -109,7 +64,7 @@ int main(int argc, const char *argv[])
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
 	string cascadeName;
-	string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3562.mp4";
+	string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3328.mp4";
 	bool isInputImage = false;
 	bool isInputVideo = true;
 	bool isInputCamera = false;
@@ -264,8 +219,6 @@ int main(int argc, const char *argv[])
 			}
 			numtimes++;
 
-			imshow("Otherframe", faceROI);
-
 
 			makeInitialSegmentsFlag = false;
 
@@ -287,11 +240,9 @@ int main(int argc, const char *argv[])
 		tm.stop();
 		double detectionTime = tm.getTimeMilli();
 		double fps = 1000 / detectionTime;
-		cout << fps << " fps" << endl;
-
 		imshow("result", resized_cpu);
 
-		char key = waitKey(30);
+		char key = waitKey(5);
 	}
 
 	return 0;
