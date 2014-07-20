@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
 	case 0:
 
 		cout << "Reading Data....";
-		ImgData = readBin("HONDA_DATA.bin", 400, 1279);
+		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 1279);
 		cout << "Done" << endl;
 
 		fin.open("subjectFrameNums.txt", std::ifstream::in);
@@ -151,10 +151,10 @@ int main(int argc, const char *argv[])
 
 	case 1:
 		cout << "Reading Data....";
-		ImgData = readBin("HONDA_DATA.bin", 400, 1279);
+		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 1279);
 		cout << "Done" << endl;
 
-		fin.open("subjectFrameNums.txt", std::ifstream::in);
+		fin.open("DataFiles\\subjectFrameNums.txt", std::ifstream::in);
 
 		pos = 0;
 
@@ -172,7 +172,8 @@ int main(int argc, const char *argv[])
 			size = 50;
 			Groupings g = seg1(portion, numSegments);
 			vector<Mat> split = splitBySegment(portion, g);
-			ifstream ifs("DataFiles\\dict.bin", ios::binary);
+			//cout << portion << endl;
+			ifstream ifs("Dictionaries\\dict.bin", ios::binary);
 			vector<Mat> dict;
 			for(int i = 0; i<NUM_DICT; i++){
 				dict.push_back(Mat (ROWS, COLS, CV_64F));
@@ -186,7 +187,7 @@ int main(int argc, const char *argv[])
 			}
 			ifs.close();
 
-			ifstream ifs1("DataFiles\\pinvDict.bin", ios::binary);
+			ifstream ifs1("Dictionaries\\pinvDict.bin", ios::binary);
 			vector<Mat> pinvD;
 			for(int i = 0; i<NUM_DICT; i++){
 				pinvD.push_back(Mat(COLS, ROWS, CV_64F));
