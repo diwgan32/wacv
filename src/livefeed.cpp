@@ -64,7 +64,7 @@ int main(int argc, const char *argv[])
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
 	string cascadeName;
-	string inputName = "C:\\Users\\diwakar\\Downloads\\VideoFeed\\PaSCSamples\\02463d3328.mp4";
+	string inputName = "C:\\Datasets\\UTD_Dataset\\03520v125.dv";
 	bool isInputImage = false;
 	bool isInputVideo = true;
 	bool isInputCamera = false;
