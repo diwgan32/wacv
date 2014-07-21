@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
 								}
 							}
 							pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
-							string filename = "Segments\\"+itos(ID)+".mat";
+							string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 5)+".mat";
 							pmat = matOpen(filename.c_str(), "w");
 
 							double * data2;
@@ -183,7 +183,7 @@ int main(int argc, const char *argv[])
 
 
 							pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
-							filename = "Subjects\\"+itos(ID)+".mat";
+							filename = "Subjects\\"+itos(ID)+"-"+name.substr(0, 5)+".mat";
 							pmat = matOpen(filename.c_str(), "w");
 
 							double * data1;
