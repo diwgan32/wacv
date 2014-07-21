@@ -5,7 +5,7 @@ addpath C:\FaceRecognition_YiChen_ECCV12\tools
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ksvdbox13
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ompbox10
 
-numSubjects = 5;
+numSubjects = 15;
 K = 3;
 offsets = [];
 img_gallery = [];
@@ -44,8 +44,18 @@ fprintf('Start training dictionary..\n');
 Dict = mp_train(img_gallery, index_gallery, dictsize, iternum);
 
 fid = fopen('Dictionaries\dict.bin', 'w');
-fwrite(fid, [Dict.D{1} Dict.D{2} Dict.D{3} Dict.D{4} Dict.D{5}], 'double');
+printD = [];
+for i=1:numSubjects,
+    printD = [printD Dict.D{i}];
+end
+
+fwrite(fid, printD, 'double');
 fclose(fid);
+printPINVD = [];
+for i=1:numSubjects,
+    printPINVD = [printPINVD Dict.pinvD{i}];
+end
+
 fid = fopen('Dictionaries\pinvDict.bin', 'w');
-fwrite(fid, [Dict.pinvD{1} Dict.pinvD{2} Dict.pinvD{3} Dict.pinvD{4} Dict.pinvD{5}], 'double');
+fwrite(fid, printPINVD, 'double');
 fclose(fid);
