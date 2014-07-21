@@ -9,8 +9,8 @@
 #include "mp_test.h"
 #include "segment.h"
 #include "utils.h"
-#define NUM_DICT 5
-#define NUM_SUBJECTS 5
+#define NUM_DICT 15
+#define NUM_SUBJECTS 15
 #define COLS 3
 #define ROWS 400
 using namespace std;
@@ -58,17 +58,18 @@ int main(int argc, const char *argv[])
 	case 0:
 
 		cout << "Reading Data....";
-		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 1279);
+		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 4966);
 		cout << "Done" << endl;
 
-		fin.open("subjectFrameNums.txt", std::ifstream::in);
+		fin.open("DataFiles\\subjectFrameNums.txt", std::ifstream::in);
 
-		for(int z = 0; z<5; z++){
-			// 249 183 292 306 249
+		for(int z = 0; z<15; z++){
+			// 249 306 163 240 263
 			MATFile *pmat;
 			mxArray *pa1;
 			int size = 0;
 			fin >> size;
+			cout << size <<" ";
 			size = size-1;
 
 			Mat portion = ImgData.colRange(Range(pos, pos+100));
@@ -151,7 +152,7 @@ int main(int argc, const char *argv[])
 
 	case 1:
 		cout << "Reading Data....";
-		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 1279);
+		ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 4966);
 		cout << "Done" << endl;
 
 		fin.open("DataFiles\\subjectFrameNums.txt", std::ifstream::in);
@@ -159,7 +160,7 @@ int main(int argc, const char *argv[])
 		pos = 0;
 
 
-		for(int z = 0; z<5; z++){
+		for(int z = 0; z<15; z++){
 			// 249 183 292 306 249
 			MATFile *pmat;
 			mxArray *pa1;
