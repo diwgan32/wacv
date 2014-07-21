@@ -8,6 +8,7 @@
 #include "mp_test.h"
 #include "segment.h"
 #include "utils.h"
+#include "dirent.h"
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
@@ -54,17 +55,11 @@ void convertAndResize(const T& src, T& gray, T& resized, double scale)
 int main(int argc, const char *argv[])
 {
 
-	if (getCudaEnabledDeviceCount() == 0)
-	{
-		int x;
-		cin >> x;
-		return cerr << "No GPU found or the library is compiled without GPU support" << endl, -1;
-	}
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
 	string cascadeName;
-	string inputName = "C:\\Datasets\\UTD\\03520v125.dv";
+	string inputName = "C:\\Datasets\\UTD\\04802v125.dv";
 	bool isInputImage = false;
 	bool isInputVideo = true;
 	bool isInputCamera = false;
@@ -77,16 +72,7 @@ int main(int argc, const char *argv[])
 	}
 
 
-	VideoCapture capture;
-	Mat image;
-	capture.open(inputName);
-	if (!capture.isOpened())  // if not success, exit program
-	{
-		cout << "\nTrying Again....\n" << endl;
-		capture.open(inputName);
-	}
 
-	double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
 	namedWindow("result", 1);
 
 	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
@@ -94,7 +80,7 @@ int main(int argc, const char *argv[])
 
 	GpuMat frame_gpu, gray_gpu, resized_gpu, facesBuf_gpu;
 
-	/* parameters */
+
 	bool useGPU = true;
 	double scaleFactor = .5;
 	bool findLargestObject = false;
@@ -109,141 +95,231 @@ int main(int argc, const char *argv[])
 	bool isSpaceBarPressed = false;
 	bool makeInitialSegmentsFlag = false;
 
-	int numtimes = 0;
-	Mat data;
-	Mat temp;
-	int numSegments = 2;
+
 
 	Mat faceROI;
 	Mat faceROI_resize;
 
-	for (;;)
-	{
-		if (isInputCamera || isInputVideo)
-		{
-			capture >> frame;
-			if (frame.empty())
-			{
-				g = reset(data, g, numSegments);
-				std::ofstream ifs("data.txt");
 
-				for(int i = 0; i<numSegments; i++){
-					ifs << "bestsgt{" << i+1 <<  "} = [";
-					for(int j = 0; j<g.segments[i].size(); j++){
-						ifs <<g.segments[i].at(j)+1 << " ";
-					}
-					ifs << "];";
-					ifs << endl;
+	DIR *dir;
+	struct dirent *ent;
+	string name;
+	string prev = "";
+	int ID = 0;
+	if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
+		/* print all the files and directories within directory */
+		while ((ent = readdir (dir)) != NULL) {
+			name = ent->d_name;
+
+			if(name.compare(".") != 0 && name.compare("..") != 0) {
+				if(name.substr(0, 5).compare(prev) != 0){
+					ID++;
+				}else{
+					continue;
+				}
+				int numtimes = 0;
+				Mat data;
+				Mat temp;
+				int numSegments = 2;
+
+				VideoCapture capture;
+				Mat image;
+				capture.open("C:\\Datasets\\UTD\\"+name);
+				if (!capture.isOpened())  // if not success, exit program
+				{
+					cout << "\nTrying Again....\n" << endl;
+					capture.open(inputName);
 				}
 
-				ifs.close();
+				double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
+				for (;;)
+				{
+					if (isInputCamera || isInputVideo)
+					{
+						capture >> frame;
+						if (frame.empty())
+						{
+							g = reset(data, g, numSegments);
+							MATFile *pmat;
+							mxArray *pa1;
+
+							int maxnum = 0;
+							for(int j = 0; j<numSegments; j++){
+
+								if(g.segments[j].size()>maxnum){
+									maxnum = g.segments[j].size();
+								}
+							}
+							pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
+							string filename = "Segments\\"+itos(ID)+".mat";
+							pmat = matOpen(filename.c_str(), "w");
+
+							double * data2;
+							int count = 0;
+							data2 = new double[numSegments*maxnum];
+							for(int j = 0; j<maxnum; j++){
+								for(int k = 0; k<numSegments;  k++){
+									if(j>=g.segments[k].size()){
+										data2[count] = -1;
+									}
+									else{
+										data2[count] = g.segments[k].at(j);
+									}
+									count++;
+								}
+							}
+
+							memcpy((void *)(mxGetPr(pa1)), data2, sizeof(data2)*maxnum*numSegments);
+							int status = matPutVariable(pmat, "Segments", pa1);
+							if (status != 0) {
+
+								printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+								return(EXIT_FAILURE);
+							}  
+
+							mxDestroyArray(pa1);
+							matClose(pmat);
 
 
-				MATFile *pmat;
-				mxArray *pa1;
 
-				pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
-				string filename = "Subjects\\"+itos(7)+".mat";
-				pmat = matOpen(filename.c_str(), "w");
+							pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
+							filename = "Subjects\\"+itos(ID)+".mat";
+							pmat = matOpen(filename.c_str(), "w");
 
-				double * data1;
-				data1 = new double[numtimes*400];
-				int count = 0;
-				for(int i = 0; i<numtimes; i++){
-					for(int j = 0; j<400; j++){
-						data1[count] = data.at<double>(j, i);
+							double * data1;
+							data1 = new double[numtimes*400];
+							count = 0;
+							for(int i = 0; i<numtimes; i++){
+								for(int j = 0; j<400; j++){
+									data1[count] = data.at<double>(j, i);
+									count++;
+								}
 
-						count++;
+							}
+
+
+							memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
+							status = matPutVariable(pmat, "SubjectData", pa1);
+							if (status != 0) {
+
+								printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+								return(EXIT_FAILURE);
+							}  
+
+							mxDestroyArray(pa1);
+							matClose(pmat);
+
+							delete data1;
+							delete data2;
+							break;
+						}
 					}
+
+					(image.empty() ? frame : image).copyTo(frame_cpu);
+					frame_gpu.upload(image.empty() ? frame : image);
+
+					convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
+
+
+					TickMeter tm;
+					tm.start();
+
+					if (useGPU)
+					{
+						//cascade_gpu.visualizeInPlace = true;
+						cascade_gpu.findLargestObject = findLargestObject;
+
+						detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
+							1.1, 2, Size(10, 10));
+						facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
+					}
+
+					if (useGPU)
+					{
+						resized_gpu.download(resized_cpu);
+
+						for (int i = 0; i < detections_num; ++i)
+						{
+							Point c1;
+							c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
+							c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
+
+							Point c2;
+							c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
+							c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
+							rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
+							faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
+							flag = true;
+						}
+
+
+					}
+
+
+					if(flag){
+
+						resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+						if(numtimes == 0){
+							faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
+							data = data/255.0;
+						}else{
+							faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
+							temp = temp/255.0;
+
+							hconcat(data, temp, data);
+						}
+						numtimes++;
+
+
+						makeInitialSegmentsFlag = false;
+
+						if(numtimes == 10){
+							numSegments++;
+							g = seg(data, numSegments);
+
+						}
+
+
+						if(numtimes > 10 && (numtimes)%4 == 0){
+							g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
+						}
+
+						flag = false;
+
+
+
+					}
+					tm.stop();
+					double detectionTime = tm.getTimeMilli();
+					double fps = 1000 / detectionTime;
+					imshow("result", frame_cpu);
+
+					char key = waitKey(5);
 				}
 
-				memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
-				int status = matPutVariable(pmat, "ImgData1", pa1);
-				if (status != 0) {
-
-					printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
-					return(EXIT_FAILURE);
-				}  
-
-				mxDestroyArray(pa1);
-				matClose(pmat);
-				break;
 			}
+			prev = name.substr(0, 5);
 		}
-
-		(image.empty() ? frame : image).copyTo(frame_cpu);
-		frame_gpu.upload(image.empty() ? frame : image);
-
-		convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
-
-
-		TickMeter tm;
-		tm.start();
-
-		if (useGPU)
-		{
-			//cascade_gpu.visualizeInPlace = true;
-			cascade_gpu.findLargestObject = findLargestObject;
-
-			detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-				1.1, 2, Size(10, 10));
-			facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
-		}
-
-		if (useGPU)
-		{
-			resized_gpu.download(resized_cpu);
-
-			for (int i = 0; i < detections_num; ++i)
-			{
-				rectangle(resized_cpu, faces_downloaded.ptr<cv::Rect>()[i], Scalar(255));
-				faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
-				flag = true;
-			}
-
-			
-		}
-
-
-		if(flag){
-			
-			resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-			if(numtimes == 0){
-				faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
-				data = data/255.0;
-			}else{
-				faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
-				temp = temp/255.0;
-
-				hconcat(data, temp, data);
-			}
-			numtimes++;
-
-
-			makeInitialSegmentsFlag = false;
-
-			if(numtimes == 10){
-				numSegments++;
-				g = seg(data, numSegments);
-
-			}
-
-			if(numtimes > 10 && (numtimes)%4 == 0){
-				g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
-			}
-
-			flag = false;
-
-
-
-		}
-		tm.stop();
-		double detectionTime = tm.getTimeMilli();
-		double fps = 1000 / detectionTime;
-		imshow("result", resized_cpu);
-
-		char key = waitKey(5);
+		closedir (dir);
+	} else {
+		/* could not open directory */
+		perror ("");
+		return EXIT_FAILURE;
 	}
 
+
+	if (getCudaEnabledDeviceCount() == 0)
+	{
+		int x;
+		cin >> x;
+		return cerr << "No GPU found or the library is compiled without GPU support" << endl, -1;
+	}
+
+
+
+
 	return 0;
+
 }
+
+

@@ -4,8 +4,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/contrib/contrib.hpp>
-
 #include <opencv2/gpu/gpu.hpp>
+
 #include <iostream>
 #include <ctime>
 #include <mat.h>
