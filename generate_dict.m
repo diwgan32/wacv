@@ -15,7 +15,7 @@ PINVD = {};
 
 
 dictsize = 3;
-iternum = 20;
+iternum = 30;
 prevsize = 0;
 temp_gallery = [];
 

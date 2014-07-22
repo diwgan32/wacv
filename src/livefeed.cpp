@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
 	Mat temp(3, 3, CV_32S);
 	for(int i = 0; i<3; i++){
 		for(int j = 0; j<3; j++){
-		temp.at<int>(i, j) = i+j;
+			temp.at<int>(i, j) = i+j;
 		}
 	}
 	Mat I;
@@ -319,7 +319,8 @@ int main(int argc, const char *argv[])
 						double fps = 1000 / detectionTime;
 						imshow("result", frame_cpu);
 
-						char key = waitKey(5);
+						if(waitKey(5) == 27)
+							return 0;
 					}
 
 				}
@@ -404,7 +405,7 @@ int main(int argc, const char *argv[])
 									int max = 0;
 									int id = 0;
 									int max1 = 0;
-										int id1 = 0;
+									int id1 = 0;
 									for(int i = 0; i<NUM_SUBJECTS; i++){
 										scores.push_back(0);
 									}
@@ -417,18 +418,52 @@ int main(int argc, const char *argv[])
 											scores.at(labels.at<int>(j, 0)) += 1;
 										}
 
-										max = 0;
-										id = 0;
-										for(int j = 0; j<NUM_SUBJECTS; j++){
-											if(scores.at(j) > max){
-												max = scores.at(j);
-												id = j;
-											}
+
+
+									}
+									max = 0;
+									id = 0;
+									for(int j = 0; j<NUM_SUBJECTS; j++){
+										if(scores.at(j) > max){
+											max = scores.at(j);
+											id = j;
 										}
-										
 									}
 									sort(scores.begin(), scores.end(), wayToSort);
-									cout << "Subject: #"<<id << " -- " << scores.at(0) << endl;
+									cout << "Subject: #"<<id << " -- " << ID-1 << endl;
+								}else{
+
+									vector<int> scores;
+									scores.reserve(NUM_SUBJECTS);
+									int max = 0;
+									int id = 0;
+									int max1 = 0;
+									int id1 = 0;
+									for(int i = 0; i<NUM_SUBJECTS; i++){
+										scores.push_back(0);
+									}
+
+
+									Mat labels = image_test(data, dict, pinvD);
+
+
+									for(int j = 0; j<labels.rows; j++){
+										scores.at(labels.at<int>(j, 0)) += 1;
+									}
+
+
+
+
+									max = 0;
+									id = 0;
+									for(int j = 0; j<NUM_SUBJECTS; j++){
+										if(scores.at(j) > max){
+											max = scores.at(j);
+											id = j;
+										}
+									}
+									sort(scores.begin(), scores.end(), wayToSort);
+									cout << "Subject: #"<<id << " -- " << ID-1 << endl;
 								}
 								break;
 							}
@@ -526,10 +561,218 @@ int main(int argc, const char *argv[])
 		}
 
 
-		return 0;
 
+
+	}else if(choice == 3){
+		
+		ifstream ifs("Dictionaries\\dict.bin", ios::binary);
+		vector<Mat> dict;
+		for(int i = 0; i<NUM_DICT; i++){
+			dict.push_back(Mat (ROWS, COLS, CV_64F));
+		}
+		double val;
+		for(int i = 0; i<COLS*NUM_DICT; i++){
+			for(int j = 0; j<ROWS; j++){
+				ifs.read(reinterpret_cast<char*> (&dict.at(i/COLS).at<double>(j, i%COLS)) , sizeof val);
+			}
+
+		}
+		ifs.close();
+
+		ifstream ifs1("Dictionaries\\pinvDict.bin", ios::binary);
+		vector<Mat> pinvD;
+		for(int i = 0; i<NUM_DICT; i++){
+			pinvD.push_back(Mat(COLS, ROWS, CV_64F));
+		}
+		for(int i = 0; i<ROWS*NUM_DICT; i++){
+			for(int j = 0; j<COLS; j++){
+				ifs1.read(reinterpret_cast<char*> (&pinvD.at(i/ROWS).at<double>(j, i%ROWS)) , sizeof val);
+			}
+		}
+		Mat data;
+		Mat temp;
+		int numSegments = 2;
+		int numtimes = 0;
+		VideoCapture capture;
+		Mat image;
+		cout << "Input name: " << endl;
+		cin >> name;
+		cout << endl;
+		capture.open("C:\\Datasets\\UTD\\"+name);
+		if (!capture.isOpened())  // if not success, exit program
+		{
+			cout << "\nTrying Again....\n" << endl;
+			capture.open(inputName);
+		}
+		double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
+
+		for (;;)
+		{
+			if (isInputCamera || isInputVideo)
+			{
+				capture >> frame;
+				if (frame.empty())
+				{	
+					if(numtimes > 11){
+						g = reset(data, g, numSegments);
+
+						vector<Mat> split = splitBySegment(data, g);
+						//cout << portion << endl;
+
+						vector<int> scores;
+						scores.reserve(NUM_SUBJECTS);
+						int max = 0;
+						int id = 0;
+						int max1 = 0;
+						int id1 = 0;
+						for(int i = 0; i<NUM_SUBJECTS; i++){
+							scores.push_back(0);
+						}
+
+						for(int i = 0; i<numSegments; i++){
+							Mat labels = image_test(split.at(i), dict, pinvD);
+
+
+							for(int j = 0; j<labels.rows; j++){
+								scores.at(labels.at<int>(j, 0)) += 1;
+							}
+
+
+
+						}
+						max = 0;
+						id = 0;
+						for(int j = 0; j<NUM_SUBJECTS; j++){
+							if(scores.at(j) > max){
+								max = scores.at(j);
+								id = j;
+							}
+						}
+						sort(scores.begin(), scores.end(), wayToSort);
+						cout << "Subject: #"<<id << " -- " << ID-1 << endl;
+					}else{
+
+						vector<int> scores;
+						scores.reserve(NUM_SUBJECTS);
+						int max = 0;
+						int id = 0;
+						int max1 = 0;
+						int id1 = 0;
+						for(int i = 0; i<NUM_SUBJECTS; i++){
+							scores.push_back(0);
+						}
+
+
+						Mat labels = image_test(data, dict, pinvD);
+
+
+						for(int j = 0; j<labels.rows; j++){
+							scores.at(labels.at<int>(j, 0)) += 1;
+						}
+
+
+
+
+						max = 0;
+						id = 0;
+						for(int j = 0; j<NUM_SUBJECTS; j++){
+							if(scores.at(j) > max){
+								max = scores.at(j);
+								id = j;
+							}
+						}
+						sort(scores.begin(), scores.end(), wayToSort);
+						cout << "Subject: #"<<id << " -- " << ID-1 << endl;
+					}
+					break;
+				}
+			}
+
+			(image.empty() ? frame : image).copyTo(frame_cpu);
+			frame_gpu.upload(image.empty() ? frame : image);
+
+			convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
+
+
+			TickMeter tm;
+			tm.start();
+
+			if (useGPU)
+			{
+				//cascade_gpu.visualizeInPlace = true;
+				cascade_gpu.findLargestObject = findLargestObject;
+
+				detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
+					1.1, 2, Size(10, 10));
+				facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
+			}
+
+			if (useGPU)
+			{
+				resized_gpu.download(resized_cpu);
+
+				for (int i = 0; i < detections_num; ++i)
+				{
+					Point c1;
+					c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
+					c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
+
+					Point c2;
+					c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
+					c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
+					if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100){
+						rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
+						faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
+						flag = true;
+					}
+				}
+
+
+			}
+
+
+			if(flag){
+
+				resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+				if(numtimes == 0){
+					faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
+					data = data/255.0;
+				}else{
+					faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
+					temp = temp/255.0;
+
+					hconcat(data, temp, data);
+				}
+				numtimes++;
+
+
+				makeInitialSegmentsFlag = false;
+
+				if(numtimes == 10){
+					numSegments++;
+					g = seg(data, numSegments);
+
+				}
+
+
+				if(numtimes > 10 && (numtimes)%4 == 0){
+					g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
+				}
+
+				flag = false;
+
+
+
+			}
+			tm.stop();
+			double detectionTime = tm.getTimeMilli();
+			double fps = 1000 / detectionTime;
+			imshow("result", frame_cpu);
+
+			if(waitKey(5) == 27)
+				return 0;
+		}
 	}
-
-
+	return 0;
 
 }
