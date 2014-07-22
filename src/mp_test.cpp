@@ -3,17 +3,18 @@
 using namespace cv;
 double project(Mat img, Mat D, Mat pinvD){
 	Mat feature;
+	
 	feature = pinvD*img;
 	Mat temp;
 	Mat temp1 = img-(D*feature);
-	pow(img-(D*feature), 2.0, temp);
-	pow(temp, 2.0, temp);
+	pow(temp1, 2.0, temp);
+
 	double res = sum(temp)[0];
 
 	return res;
 }
 Mat image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
-	Mat dist = Mat(img.cols, D.size(), CV_64F);
+	Mat dist = Mat(img.cols, D.size(), CV_64F, 0.0);
 	Mat temp;
 	double res;
 	Mat temp1(400, 1, CV_64F);
@@ -30,6 +31,7 @@ Mat image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 
 	Mat I;
 	cv::sortIdx(dist, I, CV_SORT_ASCENDING + CV_SORT_EVERY_ROW);
+	//std::cout << I.col(0) << std::endl;
 	return I.col(0);
 }
 
