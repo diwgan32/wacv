@@ -163,7 +163,7 @@ Groupings addFrame(Groupings g, Mat frame, int frameid, int k){
 
 	for(int i = 0; i<4; i++){
 		Mat c = g.centers.at(centers[i]);
-		 
+
 		g.count.at(centers[i]) = g.count.at(centers[i])+1;
 		double rate = 1/(double)g.count.at(centers[i]);
 		c = ((1-rate)*c)+(frame.col(i)*rate);
@@ -329,7 +329,7 @@ vector<Mat> splitBySegment(Mat data, Groupings g){
 				split.at(i) = temp1;
 			}
 
-			
+
 		}
 	}
 	return split;

@@ -24,7 +24,7 @@ Mat image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 
 			res = project(temp1, D.at(j), pinvD.at(j));
 
-			pow(res, 2.0);
+			res = pow(res, 2.0);
 			dist.at<double>(i, j) = res;
 		}
 	}

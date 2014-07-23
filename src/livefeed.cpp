@@ -430,7 +430,7 @@ int main(int argc, const char *argv[])
 										}
 									}
 									sort(scores.begin(), scores.end(), wayToSort);
-									cout << "Subject: #"<<id << " -- " << ID-1 << endl;
+									cout << "Subject: #"<<id << " -- " << ID-1 << (id==ID-1 ? " * " : "")<<  endl;
 								}else{
 
 									vector<int> scores;
@@ -564,7 +564,7 @@ int main(int argc, const char *argv[])
 
 
 	}else if(choice == 3){
-		
+
 		ifstream ifs("Dictionaries\\dict.bin", ios::binary);
 		vector<Mat> dict;
 		for(int i = 0; i<NUM_DICT; i++){
@@ -682,7 +682,7 @@ int main(int argc, const char *argv[])
 							}
 						}
 						sort(scores.begin(), scores.end(), wayToSort);
-						cout << "Subject: #"<<id << " -- " << ID-1 << endl;
+						cout << "Subject: #"<<id << " -- " << ID-1 << (id==ID-1 ? " * " : "")<<  endl;
 					}
 					break;
 				}
