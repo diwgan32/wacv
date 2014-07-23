@@ -5,7 +5,7 @@ addpath C:\FaceRecognition_YiChen_ECCV12\tools
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ksvdbox13
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ompbox10
 
-numSubjects = 10;
+numSubjects = 20;
 K = 3;
 offsets = [];
 img_gallery = [];
@@ -15,7 +15,7 @@ PINVD = {};
 
 
 dictsize = 3;
-iternum = 20;
+iternum = 100;
 prevsize = 0;
 temp_gallery = [];
 

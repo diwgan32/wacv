@@ -12,8 +12,8 @@
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
-#define NUM_DICT 10
-#define NUM_SUBJECTS 10
+#define NUM_DICT 20
+#define NUM_SUBJECTS 20
 #define COLS 9
 #define ROWS 400
 
@@ -398,8 +398,7 @@ int main(int argc, const char *argv[])
 									g = reset(data, g, numSegments);
 
 									vector<Mat> split = splitBySegment(data, g);
-									//cout << portion << endl;
-
+									
 									vector<int> scores;
 									scores.reserve(NUM_SUBJECTS);
 									int max = 0;

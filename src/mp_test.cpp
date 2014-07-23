@@ -1,15 +1,16 @@
 #include "includes.h"
 
 using namespace cv;
+using namespace std;
 double project(Mat img, Mat D, Mat pinvD){
 	Mat feature;
 	
 	feature = pinvD*img;
 	Mat temp;
-	Mat temp1 = img-(D*feature);
-	pow(temp1, 2.0, temp);
+	Mat temp1 = img-D*feature;
 
-	double res = sum(temp)[0];
+
+	double res = cv::norm(temp1, 2);
 
 	return res;
 }
