@@ -11,7 +11,7 @@
 #include "utils.h"
 #define NUM_DICT 15
 #define NUM_SUBJECTS 15
-#define COLS 3
+#define COLS 9
 #define ROWS 400
 using namespace std;
 using namespace cv;
@@ -49,7 +49,8 @@ int main(int argc, const char *argv[])
 	Mat ImgData;
 
 	cout << "Reading Data....";
-	ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 100);
+	//2838
+	ImgData = readBin("DataFiles\\HONDA_DATA.bin", 400, 3916);
 	cout << "Done" << endl;
 
 	fin.open("DataFiles\\subjectFrameNums.txt", std::ifstream::in);
@@ -69,18 +70,18 @@ int main(int argc, const char *argv[])
 		case 0:
 
 
-			for(int z = 0; z<15; z++){
+			for(int z = 0; z<NUM_SUBJECTS; z++){
 				// 249 306 163 240 263
-				MATFile *pmat;
+				MATFile *pmat; 
 				mxArray *pa1;
 				int size = 0;
 				fin >> size;
 				cout << size <<" ";
 				size = size-1;
-
-				Mat portion = ImgData.colRange(Range(pos, pos+100));
+				
+				Mat portion = ImgData.colRange(Range(pos, pos+(size/2)));
 				pos+=size;
-				size = 100;
+				size = (size/2);
 				Groupings g = seg1(portion, numSegments);
 
 				int maxnum = 0;
@@ -160,8 +161,8 @@ int main(int argc, const char *argv[])
 
 			pos = 0;
 
-
-			for(int z = 0; z<15; z++){
+			int ID = 0;
+			for(int z = 0; z<NUM_SUBJECTS; z++){
 				// 249 183 292 306 249
 				MATFile *pmat;
 				mxArray *pa1;
@@ -169,9 +170,9 @@ int main(int argc, const char *argv[])
 				fin >> size;
 				size = size-1;
 
-				Mat portion = ImgData.colRange(Range(pos+100, pos+150));
+				Mat portion = ImgData.colRange(Range(pos+(size/2), pos+size));
 				pos+=size;
-				size = 50;
+				size = (size/2);
 				Groupings g = seg1(portion, numSegments);
 				vector<Mat> split = splitBySegment(portion, g);
 				//cout << portion << endl;
@@ -225,8 +226,8 @@ int main(int argc, const char *argv[])
 					}
 				}
 				sort(scores.begin(), scores.end(), wayToSort);
-				cout << "Subject: #"<<id << endl;
-
+				cout << "Subject: #"<<id << " -- " << ID << (id==ID ? " * " : "")<<  endl;
+				ID++;
 			}
 			fin.close();
 			break;

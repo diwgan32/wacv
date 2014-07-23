@@ -9,52 +9,82 @@ numSubjects = 15;
 K = 3;
 offsets = [];
 img_gallery = [];
-for i=0:numSubjects-1,
-    var = strcat('Subjects\',int2str(i),'.mat');
+count = 0;
+D = {};
+PINVD = {};
+
+
+dictsize = 3;
+iternum = 20;
+prevsize = 0;
+temp_gallery = [];
+
+
+for i=1:numSubjects,
+    var = strcat('Subjects\',int2str(i-1),'.mat');
     load (var);
-    var = strcat('Segments\',int2str(i),'.mat');
+    
+    var = strcat('Segments\',int2str(i-1),'.mat');
     load (var);
     
     for j=1:K,
+        Dict = [];
+        temp_gallery = [];
+        index_gallery = [];
         for k=1:size(Segments, 2),
             if Segments(j, k) ~= -1,
-                img_gallery = [img_gallery SubjectData(:, (Segments(j, k))+1)];
+                temp_gallery = [temp_gallery SubjectData(:, (Segments(j, k))+1)];
+                count=count+1;
             end
+            
+            
+            
+        end
+       
+        if count < 32,
+            temp_gallery = [temp_gallery gitter(temp_gallery, 20, 20, 32)];
+        end
+        count = 0;
+        index_gallery = [index_gallery repmat(1,1,size(temp_gallery, 2))];
+        Dict = mp_train(temp_gallery, index_gallery, dictsize, iternum);
+        if j==1,
+            D{i} = Dict.D{1};
+            
+        else
+            D{i} = [D{i} Dict.D{1}];
+            
         end
     end
-    offsets = [offsets size(SubjectData, 2)];
 end
+
+
+
 subject_idx = 97;
 
 K = 3;
 
-index_gallery = [];
+
+
 
 runidx = 1;
 for i=1:numSubjects,
-index_gallery = [index_gallery repmat(runidx,1,offsets(i))];
-runidx = runidx+1;
+    
+    runidx = runidx+1;
 end
 
-dictsize = 3;
-iternum = 100;
-
-fprintf('Start training dictionary..\n');
-
-Dict = mp_train(img_gallery, index_gallery, dictsize, iternum);
-
-fid = fopen('Dictionaries\dict.bin', 'w');
 printD = [];
+printPINVD = [];
+
 for i=1:numSubjects,
-    printD = [printD Dict.D{i}];
+    printD = [printD D{i}];
 end
 
+for i=1:numSubjects,
+    printPINVD = [printPINVD pinv(printD(:, (i-1)*(K*dictsize)+1:i*(K*dictsize)))];
+end
+fid = fopen('Dictionaries\dict.bin', 'w');
 fwrite(fid, printD, 'double');
 fclose(fid);
-printPINVD = [];
-for i=1:numSubjects,
-    printPINVD = [printPINVD Dict.pinvD{i}];
-end
 
 fid = fopen('Dictionaries\pinvDict.bin', 'w');
 fwrite(fid, printPINVD, 'double');
