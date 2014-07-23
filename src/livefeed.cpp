@@ -341,6 +341,11 @@ int main(int argc, const char *argv[])
 #pragma endregion
 	}else if(choice == 1){
 
+		ofstream fout;
+		fout.open("matrix.txt");
+	
+
+
 		ifstream ifs("Dictionaries\\dict.bin", ios::binary);
 		vector<Mat> dict;
 		for(int i = 0; i<NUM_DICT; i++){
@@ -367,6 +372,25 @@ int main(int argc, const char *argv[])
 		}
 
 		ifs1.close();
+		string *names = new string[NUM_SUBJECTS];
+		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
+			/* print all the files and directories within directory */
+			while ((ent = readdir (dir)) != NULL && ID<10) {
+				name = ent->d_name;
+				int numtimes = 0;
+				if(name.compare(".") != 0 && name.compare("..") != 0) {
+					if(name.substr(6, 1).compare("1") == 0){
+						ID++;
+					}else{
+						continue;
+					}
+					names[ID-1] = name;
+				}
+			}
+		}
+		ID = 0;
+
+
 		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
 			/* print all the files and directories within directory */
 			while ((ent = readdir (dir)) != NULL && ID<10) {
@@ -399,12 +423,7 @@ int main(int argc, const char *argv[])
 							capture >> frame;
 							if (frame.empty())
 							{	
-								if(numtimes > 11){
-									g = reset(data, g, numSegments);
-
 								
-								}else{
-
 									vector<int> scores;
 									scores.reserve(NUM_SUBJECTS);
 									int max = 0;
@@ -417,10 +436,13 @@ int main(int argc, const char *argv[])
 
 
 									sim_matrix[ID-1] = image_test(data, dict, pinvD);
+									for(int z = 0; z<NUM_SUBJECTS; z++){
+										fout << names[z] << " " << name << " " << z << " " << ID-1 << " " << (z==ID-1 ? 1 : 0) << " " << sim_matrix[ID-1][z] << endl;
+									}
 									cout << ID-1 << endl;
-								}
+								
 								break;
-							}
+							}	
 						}
 
 						(image.empty() ? frame : image).copyTo(frame_cpu);
@@ -513,17 +535,18 @@ int main(int argc, const char *argv[])
 
 			}
 		}
+		fout.close();
 	}
-
-	ofstream fout;
-	fout.open("matrix.txt");
+	
+		ofstream fout;
+	fout.open("matrix1.txt");
 	for(int i = 0; i<NUM_SUBJECTS; i++){
 		for(int j = 0; j<NUM_SUBJECTS; j++){
-			fout << setprecision(2) << sim_matrix[i][j] << " ";
+			fout << setprecision(6) << sim_matrix[i][j] << " ";
 		}
 		fout << endl;
 	}
-
+	fout.close();
 	return 0;
 
 }

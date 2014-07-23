@@ -17,7 +17,7 @@ double* image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 	Mat dist = Mat(img.cols, D.size(), CV_64F, 0.0);
 	Mat temp;
 	double res;
-	double minres = 0;
+	double minres = DBL_MAX;
 	Mat temp1(400, 1, CV_64F);
 	double * sim_mat = new double[D.size()];
 	for(int j = 0; j<D.size(); j++){
@@ -31,7 +31,7 @@ double* image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 
 		}
 		sim_mat[j] = minres;
-		minres = 0;
+		minres = DBL_MAX;
 	}
 	
 	return sim_mat;
