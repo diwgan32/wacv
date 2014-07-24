@@ -49,7 +49,11 @@ void convertAndResize(const T& src, T& gray, T& resized, double scale)
 	}
 }
 
-
+template <class T>
+bool contains(const std::vector<T> &vec, const T &value)
+{
+    return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
 
 
 int main(int argc, const char *argv[])
@@ -120,7 +124,18 @@ int main(int argc, const char *argv[])
 	string name;
 	string prev = "";
 	int ID = 0;
+	vector<string> names1;
+	if ((dir = opendir ("Subjects\\")) != NULL) {
+			/* print all the files and directories within directory */
+			while ((ent = readdir (dir)) != NULL) {
+				name = ent->d_name;
 
+				if(name.compare(".") != 0 && name.compare("..") != 0) {
+					names1.push_back(name.substr(2, 5));
+				
+				}
+			}
+	}
 	cout << "Train or recog?: ";
 
 	int choice;
@@ -379,7 +394,7 @@ int main(int argc, const char *argv[])
 				name = ent->d_name;
 				int numtimes = 0;
 				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(6, 1).compare("1") == 0){
+					if(name.substr(6, 1).compare("1") == 0 && contains(names1, name.substr(0, 5))){
 						ID++;
 					}else{
 						continue;
@@ -397,7 +412,7 @@ int main(int argc, const char *argv[])
 				name = ent->d_name;
 				int numtimes = 0;
 				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(6, 1).compare("1") != 0){
+					if(name.substr(6, 1).compare("1") != 0 && contains(names1, name.substr(0, 5))){
 						ID++;
 					}else{
 						continue;
