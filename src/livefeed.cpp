@@ -12,8 +12,8 @@
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
-#define NUM_DICT 20
-#define NUM_SUBJECTS 20
+#define NUM_DICT 10
+#define NUM_SUBJECTS 10
 #define COLS 9
 #define ROWS 400
 
@@ -53,7 +53,7 @@ void convertAndResize(const T& src, T& gray, T& resized, double scale)
 template <class T>
 bool contains(const std::vector<T> &vec, const T &value)
 {
-    return std::find(vec.begin(), vec.end(), value) != vec.end();
+	return std::find(vec.begin(), vec.end(), value) != vec.end();
 }
 
 int main(int argc, const char *argv[])
@@ -120,18 +120,21 @@ int main(int argc, const char *argv[])
 	string prev = "";
 	int ID = 0;
 	vector<string> names;
+
 	if ((dir = opendir ("Subjects\\")) != NULL) {
-			/* print all the files and directories within directory */
-			while ((ent = readdir (dir)) != NULL) {
-				name = ent->d_name;
+		/* print all the files and directories within directory */
+		while ((ent = readdir (dir)) != NULL) {
+			name = ent->d_name;
 
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					names.push_back(name.substr(2, 5));
-				
-				}
+			if(name.compare(".") != 0 && name.compare("..") != 0) {
+
+				names.push_back(name.substr((int)name.find('-')+1, 5));
+
+				ID++;
 			}
+		}
 	}
-
+	ID = 0;
 	cout << "Train or recog?: ";
 
 	int choice;
@@ -148,7 +151,7 @@ int main(int argc, const char *argv[])
 
 				if(name.compare(".") != 0 && name.compare("..") != 0) {
 					if(name.substr(0, 5).compare(prev) != 0){
-						
+
 					}else{
 						continue;
 					}
@@ -175,7 +178,8 @@ int main(int argc, const char *argv[])
 							if (frame.empty())
 							{
 								cout << numtimes << endl;
-								if(numtimes > 45){
+								if(numtimes > 40){
+									cout << name << endl;
 									ID++;
 									g = reset(data, g, numSegments);
 									MATFile *pmat;
@@ -288,7 +292,11 @@ int main(int argc, const char *argv[])
 
 								c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
 								c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
-								if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100){
+								if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100 && 
+									
+									faces_downloaded.ptr<cv::Rect>()[i].y*(1/scale) < 250){
+									
+										
 									rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
 									faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
 									flag = true;
@@ -413,11 +421,42 @@ int main(int argc, const char *argv[])
 							capture >> frame;
 							if (frame.empty())
 							{	
+
 								if(numtimes > 11){
+									MATFile *pmat;
+									mxArray *pa1;
+									pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
+									string filename = "Subjects1\\"+itos(ID)+"-"+name.substr(0, 5)+".mat";
+									pmat = matOpen(filename.c_str(), "w");
+
+									double * data1;
+									data1 = new double[numtimes*400];
+									int count = 0;
+									for(int i = 0; i<numtimes; i++){
+										for(int j = 0; j<400; j++){
+											data1[count] = data.at<double>(j, i);
+											count++;
+										}
+
+									}
+
+
+									memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
+									int 	status = matPutVariable(pmat, "SubjectData", pa1);
+									if (status != 0) {
+
+										printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+										return(EXIT_FAILURE);
+									}  
+
+									mxDestroyArray(pa1);
+									matClose(pmat);
+
+									delete data1;
 									g = reset(data, g, numSegments);
 
 									vector<Mat> split = splitBySegment(data, g);
-									
+
 									vector<int> scores;
 									scores.reserve(NUM_SUBJECTS);
 									int max = 0;
@@ -616,7 +655,7 @@ int main(int argc, const char *argv[])
 		cout << "Input name: " << endl;
 		cin >> name;
 		cout << endl;
-		capture.open("C:\\Datasets\\UTD\\"+name);
+		capture.open("C:\\UTD\\"+name);
 		if (!capture.isOpened())  // if not success, exit program
 		{
 			cout << "\nTrying Again....\n" << endl;
