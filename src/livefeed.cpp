@@ -50,7 +50,11 @@ void convertAndResize(const T& src, T& gray, T& resized, double scale)
 }
 
 
-
+template <class T>
+bool contains(const std::vector<T> &vec, const T &value)
+{
+    return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
 
 int main(int argc, const char *argv[])
 {
@@ -115,6 +119,18 @@ int main(int argc, const char *argv[])
 	string name;
 	string prev = "";
 	int ID = 0;
+	vector<string> names;
+	if ((dir = opendir ("Subjects\\")) != NULL) {
+			/* print all the files and directories within directory */
+			while ((ent = readdir (dir)) != NULL) {
+				name = ent->d_name;
+
+				if(name.compare(".") != 0 && name.compare("..") != 0) {
+					names.push_back(name.substr(2, 5));
+				
+				}
+			}
+	}
 
 	cout << "Train or recog?: ";
 
@@ -132,7 +148,7 @@ int main(int argc, const char *argv[])
 
 				if(name.compare(".") != 0 && name.compare("..") != 0) {
 					if(name.substr(0, 5).compare(prev) != 0){
-						ID++;
+						
 					}else{
 						continue;
 					}
@@ -158,7 +174,9 @@ int main(int argc, const char *argv[])
 							capture >> frame;
 							if (frame.empty())
 							{
-								if(numtimes > 11){
+								cout << numtimes << endl;
+								if(numtimes > 45){
+									ID++;
 									g = reset(data, g, numSegments);
 									MATFile *pmat;
 									mxArray *pa1;
@@ -367,9 +385,10 @@ int main(int argc, const char *argv[])
 			while ((ent = readdir (dir)) != NULL) {
 				name = ent->d_name;
 				int numtimes = 0;
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(6, 1).compare("1") != 0){
+				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
+					if(name.substr(6, 1).compare("1") != 0&& contains(names, name.substr(0, 5))){
 						ID++;
+						cout << name.substr(0, 5) << endl;
 					}else{
 						continue;
 					}
