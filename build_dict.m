@@ -9,7 +9,7 @@ addpath C:\FaceRecognition_YiChen_ECCV12\tools\ompbox10
 
 
 
-subject_idx = 10;
+subject_idx = 15;
 
 K = 3;
 
@@ -57,7 +57,7 @@ end
 
 clear G;
 
-dictsize = 3;
+dictsize = 10;
 iternum = 20;
 
 fprintf('Start training dictionary..\n');

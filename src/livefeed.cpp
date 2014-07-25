@@ -12,9 +12,9 @@
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
-#define NUM_DICT 10
-#define NUM_SUBJECTS 10
-#define COLS 9
+#define NUM_DICT 15
+#define NUM_SUBJECTS 15
+#define COLS 30
 #define ROWS 400
 
 
@@ -126,18 +126,20 @@ int main(int argc, const char *argv[])
 	int ID = 0;
 	vector<string> names1;
 	if ((dir = opendir ("Subjects\\")) != NULL) {
-			/* print all the files and directories within directory */
-			while ((ent = readdir (dir)) != NULL) {
-				name = ent->d_name;
+		/* print all the files and directories within directory */
+		while ((ent = readdir (dir)) != NULL) {
+			name = ent->d_name;
 
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					names1.push_back(name.substr(2, 5));
+			if(name.compare(".") != 0 && name.compare("..") != 0) {
+
+				names1.push_back(name.substr((int)name.find('-')+1, 5));
 				
-				}
+				ID++;
 			}
+		}
 	}
 	cout << "Train or recog?: ";
-
+	ID = 0;
 	int choice;
 	cin >> choice;
 
@@ -388,27 +390,13 @@ int main(int argc, const char *argv[])
 
 		ifs1.close();
 		string *names = new string[NUM_SUBJECTS];
-		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
-			/* print all the files and directories within directory */
-			while ((ent = readdir (dir)) != NULL && ID<10) {
-				name = ent->d_name;
-				int numtimes = 0;
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(6, 1).compare("1") == 0 && contains(names1, name.substr(0, 5))){
-						ID++;
-					}else{
-						continue;
-					}
-					names[ID-1] = name;
-				}
-			}
-		}
+
 		ID = 0;
 
 
 		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
 			/* print all the files and directories within directory */
-			while ((ent = readdir (dir)) != NULL && ID<10) {
+			while ((ent = readdir (dir)) != NULL && ID<NUM_SUBJECTS) {
 				name = ent->d_name;
 				int numtimes = 0;
 				if(name.compare(".") != 0 && name.compare("..") != 0) {
@@ -448,11 +436,11 @@ int main(int argc, const char *argv[])
 									for(int i = 0; i<NUM_SUBJECTS; i++){
 										scores.push_back(0);
 									}
-
+									cout << name << endl;
 
 									sim_matrix[ID-1] = image_test(data, dict, pinvD);
 									for(int z = 0; z<NUM_SUBJECTS; z++){
-										fout << names[z] << " " << name << " " << z << " " << ID-1 << " " << (z==ID-1 ? 1 : 0) << " " << sim_matrix[ID-1][z] << endl;
+										fout << names1.at(z) << " " << name << " " << z << " " << ID-1 << " " << (z==ID-1 ? 1 : 0) << " " << sim_matrix[ID-1][z] << endl;
 									}
 									cout << ID-1 << endl;
 								
@@ -506,6 +494,7 @@ int main(int argc, const char *argv[])
 						if(flag){
 
 							resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+							equalizeHist(faceROI_resize, faceROI_resize);
 							if(numtimes == 0){
 								faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
 								data = data/255.0;
