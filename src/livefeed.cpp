@@ -12,8 +12,8 @@
 using namespace std;
 using namespace cv;
 using namespace cv::gpu;
-#define NUM_DICT 10
-#define NUM_SUBJECTS 10
+#define NUM_DICT 15
+#define NUM_SUBJECTS 15
 #define COLS 9
 #define ROWS 400
 
@@ -120,7 +120,7 @@ int main(int argc, const char *argv[])
 	string prev = "";
 	int ID = 0;
 	vector<string> names;
-
+	int ID_temp = 0;
 	if ((dir = opendir ("Subjects\\")) != NULL) {
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) {
@@ -129,27 +129,43 @@ int main(int argc, const char *argv[])
 			if(name.compare(".") != 0 && name.compare("..") != 0) {
 
 				names.push_back(name.substr((int)name.find('-')+1, 5));
-
+				
 				ID++;
 			}
 		}
 	}
+	ID_temp = ID;
 	ID = 0;
 	cout << "Train or recog?: ";
 
 	int choice;
 	cin >> choice;
-
+	bool flag1 = false;
 	cout << endl;
 #pragma region TRAIN
 	if(choice == 0){
-
+		string startName;
+		cout << "Input start position, or '0' to start at beginnng: ";
+		cin >> startName;
+		flag1 = false;
 		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
 			/* print all the files and directories within directory */
 			while ((ent = readdir (dir)) != NULL) {
 				name = ent->d_name;
-
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
+				if(!flag1){
+				if(startName.compare("0") == 0){
+					flag = true;
+				}else{
+					ID = ID_temp;
+					if(startName.compare(name.substr(0, 5)) != 0){
+						continue;
+					}else{
+						flag1 = true;
+					}
+				}
+				}
+				if(name.compare(".") != 0 && name.compare("..") != 0 && flag1) {
+					
 					if(name.substr(0, 5).compare(prev) != 0){
 
 					}else{
@@ -179,7 +195,7 @@ int main(int argc, const char *argv[])
 							{
 								cout << numtimes << endl;
 								if(numtimes > 40){
-									cout << name << endl;
+									
 									ID++;
 									g = reset(data, g, numSegments);
 									MATFile *pmat;
@@ -310,6 +326,7 @@ int main(int argc, const char *argv[])
 						if(flag){
 
 							resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+							equalizeHist(faceROI_resize, faceROI_resize);
 							if(numtimes == 0){
 								faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
 								data = data/255.0;
@@ -361,7 +378,10 @@ int main(int argc, const char *argv[])
 
 #pragma endregion
 	}else if(choice == 1){
-
+		string startName;
+		cout << "Input start position, or '0' to start at beginnng: ";
+		cin >> startName;
+		
 		ifstream ifs("Dictionaries\\dict.bin", ios::binary);
 		vector<Mat> dict;
 		for(int i = 0; i<NUM_DICT; i++){
@@ -386,15 +406,27 @@ int main(int argc, const char *argv[])
 				ifs1.read(reinterpret_cast<char*> (&pinvD.at(i/ROWS).at<double>(j, i%ROWS)) , sizeof val);
 			}
 		}
-
+		bool flag1 = false;
 		ifs1.close();
 		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
 			/* print all the files and directories within directory */
 			while ((ent = readdir (dir)) != NULL) {
 				name = ent->d_name;
 				int numtimes = 0;
+				if(!flag1){
+				if(startName.compare("0") == 0){
+					flag1 = true;
+				}else{
+					ID = ID_temp;
+					if(startName.compare(name.substr(0, 5)) != 0){
+						continue;
+					}else{
+					}
+				}
+				}
+
 				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
-					if(name.substr(6, 1).compare("1") != 0&& contains(names, name.substr(0, 5))){
+					if(name.substr(6, 1).compare("1") != 0&& contains(names, name.substr(0, 5)) && flag1){
 						ID++;
 						cout << name.substr(0, 5) << endl;
 					}else{
@@ -572,6 +604,7 @@ int main(int argc, const char *argv[])
 						if(flag){
 
 							resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+							equalizeHist(faceROI_resize, faceROI_resize);
 							if(numtimes == 0){
 								faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
 								data = data/255.0;
@@ -791,6 +824,7 @@ int main(int argc, const char *argv[])
 			if(flag){
 
 				resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+				equalizeHist(faceROI_resize, faceROI_resize);
 				if(numtimes == 0){
 					faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
 					data = data/255.0;
