@@ -19,5 +19,6 @@
 #include <iomanip>
 #include <stdio.h>
 #include <time.h>
+#include <mex.h>
 
-
+#include <rapidxml.hpp>
