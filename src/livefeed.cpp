@@ -11,6 +11,7 @@
 #include "dirent.h"
 
 
+
 using namespace cv;
 using namespace cv::gpu;
 using namespace rapidxml;
@@ -50,82 +51,31 @@ bool contains(const std::vector<T> &vec, const T &value)
 	return std::find(vec.begin(), vec.end(), value) != vec.end();
 }
 
-void
-mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
-{
-    int        i;
-       
-    /* Examine input (right-hand-side) arguments. */
-    mexPrintf("\nThere are %d right-hand-side argument(s).", nrhs);
-    for (i=0; i<nrhs; i++)  {
-        mexPrintf("\n\tInput Arg %i is of type:\t%s ",i,mxGetClassName(prhs[i]));
-    }
-    
-    /* Examine output (left-hand-side) arguments. */
-    mexPrintf("\n\nThere are %d left-hand-side argument(s).\n", nlhs);
-    if (nlhs > nrhs)
-      mexErrMsgIdAndTxt( "MATLAB:mexfunction:inputOutputMismatch",
-              "Cannot specify more outputs than inputs.\n");
-    
-    for (i=0; i<nlhs; i++)  {
-        plhs[i]=mxCreateDoubleMatrix(1,1,mxREAL);
-        *mxGetPr(plhs[i])=(double)mxGetNumberOfElements(prhs[i]);
-    }
-}
-
 
 
 int main(int argc, const char *argv[])
 {
-	/*
-	xml_document<> doc;
-	std::ifstream file("utdsigsets//face_walking_video_0.xml");
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	file.close();
-	std::string content(buffer.str());
-	doc.parse<0>(&content[0]);
-
-	xml_node<> *pRoot = doc.first_node();
-	int count = 0;
-	for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-	{
-
-	count++;
-
-	}
-	std::cout << count << std::endl;
-	*/
 
 
+
+
+	
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
-
-	string cascadeName;
-	string inputName = "C:\\Datasets\\UTD\\04802v125.dv";
-	bool isInputImage = false;
-	bool isInputVideo = true;
-	bool isInputCamera = false;
-	cascadeName = "HaarCascades\\haarcascade_frontalface_alt.xml";
+	string cascadeName = "HaarCascades\\haarcascade_frontalface_alt.xml";
 	CascadeClassifier_GPU cascade_gpu;
 	CascadeClassifier cascade_cpu;
 	cascade_gpu.load(cascadeName);
 
 
 
-	namedWindow("result", 1);
+	
 
 	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
 	vector<Rect> facesBuf_cpu;
 
 	GpuMat frame_gpu, gray_gpu, resized_gpu, facesBuf_gpu;
 
-
-	bool useGPU = true;
-	double scaleFactor = .5;
-	bool findLargestObject = false;
-	bool filterRects = false;
-	bool helpScreen = false;
 	Groupings g;
 	int detections_num;
 
@@ -145,448 +95,353 @@ int main(int argc, const char *argv[])
 	Mat faceROI;
 	Mat faceROI_resize;
 
-
-	DIR *dir;
-	struct dirent *ent;
-	string name;
-	string prev = "";
-	int ID = 0;
-	vector<string> names1;
-	if ((dir = opendir ("Subjects\\")) != NULL) {
-
-		while ((ent = readdir (dir)) != NULL) {
-			name = ent->d_name;
-
-			if(name.compare(".") != 0 && name.compare("..") != 0) {
-
-				names1.push_back(name.substr((int)name.find('-')+1, 5));
-				std::cout << name << std::endl;
-				ID++;
-			}
-		}
-	}
 	std::cout << "Train or recog?: ";
-	ID = 0;
+
 	int choice;
 	cin >> choice;
 
-	std::cout << std::endl;
-#pragma region TRAIN
 	if(choice == 0){
+		namedWindow("result", 1);
+		vector<string> names1;	
+		xml_document<> doc;
+		std::ifstream file("utdsigsets//face_walking_video.xml");
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		file.close();
+		std::string content(buffer.str());
+		doc.parse<0>(&content[0]);
 
-		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
+		xml_node<> *pRoot = doc.first_node();
+		int count = 0;
+		string prev = "";
+
+		int ID = 0;
+		ID = 0;
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+
+			names1.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
+
+			prev = names1.at(count).substr(0, 5);
+			count++;
+		}
+		cout << "Number of videos to train: " << count << endl;
+		cout << endl << endl;
+		string startPos;
+		cout << "Enter starting video, or 0 to start at beginning: ";
+		cin >> startPos;
+		cout << endl;
+		if(startPos.compare("0") == 0){
+			ID = 0;
+		}else{
+			while(names1.at(ID).compare(startPos) != 0){
+				ID++;
+			}
+		}
+
+		while(ID<names1.size()){
+			cout << ID << "   ";
+			string name = names1.at(ID);
+
+			int numtimes = 0;
+			Mat data;
+			Mat temp;
+			int numSegments = 2;
+
+			VideoCapture capture;
+			Mat image;
+			capture.open("C:\\UTD\\"+names1.at(ID));
+			double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
+
+
+
+			for (;;)
+			{
+				capture >> frame;
+#pragma region WRITE_DATA
+				if (frame.empty())
+				{
+					if(numtimes > 10){
+
+						g = reset(data, g, numSegments);
+						MATFile *pmat;
+						mxArray *pa1;
+
+						int maxnum = 0;
+						for(int j = 0; j<numSegments; j++){
+
+							if(g.segments[j].size()>maxnum){
+								maxnum = g.segments[j].size();
+							}
+						}
+						pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
+						string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
+						pmat = matOpen(filename.c_str(), "w");
+
+						double * data2;
+						int count = 0;
+						data2 = new double[numSegments*maxnum];
+						for(int j = 0; j<maxnum; j++){
+							for(int k = 0; k<numSegments;  k++){
+								if(j>=g.segments[k].size()){
+									data2[count] = -1;
+								}
+								else{
+									data2[count] = g.segments[k].at(j);
+								}
+								count++;
+							}
+						}
+
+						memcpy((void *)(mxGetPr(pa1)), data2, sizeof(data2)*maxnum*numSegments);
+						int status = matPutVariable(pmat, "Segments", pa1);
+						if (status != 0) {
+
+							printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+							return(EXIT_FAILURE);
+						}  
+
+						mxDestroyArray(pa1);
+						matClose(pmat);
+
+
+
+						pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
+						filename = "Subjects\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
+						pmat = matOpen(filename.c_str(), "w");
+
+						double * data1;
+						data1 = new double[numtimes*400];
+						count = 0;
+						for(int i = 0; i<numtimes; i++){
+							for(int j = 0; j<400; j++){
+								data1[count] = data.at<double>(j, i);
+								count++;
+							}
+
+						}
+
+
+						memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
+						status = matPutVariable(pmat, "SubjectData", pa1);
+
+						if (status != 0) {
+
+							printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+							return(EXIT_FAILURE);
+						}  
+
+						mxDestroyArray(pa1);
+						matClose(pmat);
+
+						delete data1;
+						delete data2;
+					}
+					break;
+				}
+#pragma endregion
+				TickMeter tm;
+				tm.start();
+#pragma region ACCUMULATE_FRAMES
+				frame.copyTo(frame_cpu);
+				frame_gpu.upload(image.empty() ? frame : image);
+
+				convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
+
+
+				cascade_gpu.findLargestObject = true;
+
+				detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
+					1.1, 2, Size(10, 10));
+				facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
+				resized_gpu.download(resized_cpu);
+
+				for (int i = 0; i < detections_num; ++i)
+				{
+					Point c1;
+					c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
+					c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
+
+					Point c2;
+
+					c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
+					c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
+					if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100 && 
+
+						faces_downloaded.ptr<cv::Rect>()[i].y*(1/scale) < 250){
+
+
+							rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
+							faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
+							flag = true;
+					}
+				}
+				if(flag){
+
+					resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
+					equalizeHist(faceROI_resize, faceROI_resize);
+					if(numtimes == 0){
+						faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
+						data = data/255.0;
+					}else{
+						faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
+						temp = temp/255.0;
+
+						hconcat(data, temp, data);
+					}
+					numtimes++;
+
+
+					makeInitialSegmentsFlag = false;
+
+					if(numtimes == 10){
+						numSegments++;
+						g = seg(data, numSegments);
+
+					}
+
+
+					if(numtimes > 10 && (numtimes)%4 == 0){
+						g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
+					}
+
+					flag = false;
+
+
+
+				}
+#pragma endregion
+				tm.stop();
+				double detectionTime = tm.getTimeMilli();
+				double fps = 1000 / detectionTime;
+				imshow("result", frame_cpu);
+
+				if(waitKey(5) == 27)
+					return 0;
+			}
+
+			ID++;
+
+		}
+	}else if (choice == 1){
+
+		ofstream fout;
+		fout.open("SimMat.txt");
+		int numTargets = 0;
+		DIR *dir;
+		struct dirent *ent;
+		string name;
+		vector<string> target_names;
+
+		int target_count = 0;
+
+		if ((dir = opendir ("Subjects\\")) != NULL) {
 
 			while ((ent = readdir (dir)) != NULL) {
 				name = ent->d_name;
+				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
+					target_names.push_back(name.substr(0, 9));
 
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(0, 5).compare(prev) != 0){
-						ID++;
-					}else{
+				}
+			}
+		}
+
+		vector<string> query_names;	
+		xml_document<> doc;
+		std::ifstream file("utdsigsets//face_walking_video_0.xml");
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		file.close();
+		std::string content(buffer.str());
+		doc.parse<0>(&content[0]);
+
+		xml_node<> *pRoot = doc.first_node();
+
+		string prev = "";
+
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+
+
+		while(target_count < target_names.size()){
+			cout << target_count << "\t";
+			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
+			Mat pinvD = readBin(("InverseDictionaries\\"+target_names.at(target_count)+".bin").c_str(), COLS, ROWS);
+			
+			int query_count = 0;
+
+			while(query_count < query_names.size()){
+
+				if(target_names.at(target_count).compare(query_names.at(query_count)) != 0){
+					if(!contains(target_names, query_names.at(query_count))){
+						query_count++;
 						continue;
 					}
-					int numtimes = 0;
-					Mat data;
-					Mat temp;
-					int numSegments = 2;
+					MATFile *pMat;
+					
+					pMat = matOpen(("Subjects\\"+query_names.at(query_count)+".mat").c_str(), "r");
+					mxArray * subjectData;
+					subjectData = matGetVariable(pMat, "SubjectData");
+					
+					int numFrames = mxGetN(subjectData);
+					double * data1 = new double[400*numFrames];
+					memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*400*numFrames);
 
-					VideoCapture capture;
-					Mat image;
-					capture.open("C:\\Datasets\\UTD\\"+name);
-					if (!capture.isOpened())  // if not success, exit program
-					{
-						std::cout << "\nTrying Again....\n" << std::endl;
-						capture.open(inputName);
+					int count = 0;
+					Mat data(400, numFrames, CV_64F);
+					for(int i = 0; i<numFrames; i++){
+						for(int j = 0; j<400; j++){
+							data.at<double>(j, i) = data1[count];
+							count++;
+						}
 					}
 
-					double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
-					for (;;)
-					{
-						if (isInputCamera || isInputVideo)
-						{
-							capture >> frame;
+					matClose(pMat);
+					delete data1;
+					mxDestroyArray(subjectData);
 
-							if (frame.empty())
-							{
-								if(numtimes > 11){
-									g = reset(data, g, numSegments);
-									mxArray *args[3];
+					pMat = matOpen(("Segments\\"+query_names.at(query_count)+".mat").c_str(), "r");
+					mxArray * segmentData;
+					segmentData = matGetVariable(pMat, "Segments");
 
-									int maxnum = 0;
-									for(int j = 0; j<numSegments; j++){
+					int maxNumberOfFramesPerSegment = mxGetN(segmentData);
+					double * data2 = new double[3*maxNumberOfFramesPerSegment];
+					memcpy(data2, (void *)(mxGetPr(segmentData)), sizeof(data2)*3*maxNumberOfFramesPerSegment);
 
-										if(g.segments[j].size()>maxnum){
-											maxnum = g.segments[j].size();
-										}
-									}
-									args [0]= mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
+					matClose(pMat);
+					mxDestroyArray(segmentData);
 
-									double * data2;
-									int count = 0;
-									data2 = new double[numSegments*maxnum];
-									for(int j = 0; j<maxnum; j++){
-										for(int k = 0; k<numSegments;  k++){
-											if(j>=g.segments[k].size()){
-												data2[count] = -1;
-											}
-											else{
-												data2[count] = g.segments[k].at(j);
-											}
-											count++;
-										}
-									}
-
-									memcpy((void *)(mxGetPr(args[0])), data2, sizeof(data2)*maxnum*numSegments);
-
-									args[1] = mxCreateDoubleMatrix(ROWS, numtimes, mxREAL);
-
-									double * data1;
-									data1 = new double[numtimes*ROWS];
-									count = 0;
-									for(int i = 0; i<numtimes; i++){
-										for(int j = 0; j<400; j++){
-											data1[count] = data.at<double>(j, i);
-											count++;
-										}
-
-									}
-									memcpy((void *)(mxGetPr(args[1])), data1, sizeof(data1)*400*numtimes);
-
-									args[2] = mxCreateDoubleMatrix(1, 3, mxREAL);
-									double * data3;
-									data3 = new double[3];
-									//numSegments, dict_size, internum
-									
-									data3[0] = 3;
-									data3[1] = 3;
-									data3[2] = 10;
-									memcpy((void *)(mxGetPr(args[2])), data3, sizeof(data3)*3);
-
-									mxArray * dict[2];
-									dict[0] = mxCreateDoubleMatrix(ROWS, COLS, mxREAL);
-									dict[1] = mxCreateDoubleMatrix(COLS, ROWS, mxREAL);
-
-									mexCallMATLAB(2, dict, 3, args, "construct_dict.m");
-									
-									double ** temp_output = new double*[ROWS];
-									for(int i = 0; i<ROWS; i++){
-										temp_output[i] = new double[COLS];
-									}
-
-									memcpy(temp_output, (void *)(mxGetPr(dict[0])), sizeof(temp_output)*ROWS*COLS);
-
-									for(int i = 0; i<ROWS; i++){
-										for(int j = 0; j<COLS; j++){
-											std::cout << setprecision(5) <<  temp_output[i][j] << " ";
-										}
-										std::cout << std::endl;
-									}
-
-									delete temp_output;
-									delete data1;
-									delete data2;
-									delete data3;
-								}
-								break;
+					Groupings g;
+					g.segments = new vector<int>[3];
+					count  = 0;
+					for(int i = 0; i<maxNumberOfFramesPerSegment; i++){
+						for(int j = 0; j<3; j++){
+							if(data2[count] != -1){
+								g.segments[j].push_back(data2[count]);
 							}
-
+							count++;
 						}
+					}
 
-						(image.empty() ? frame : image).copyTo(frame_cpu);
-						
-						frame_gpu.upload(image.empty() ? frame : image);
-
-						convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
-
-
-						TickMeter tm;
-						tm.start();
-
-						if (useGPU)
-						{
-							//cascade_gpu.visualizeInPlace = true;
-							cascade_gpu.findLargestObject = findLargestObject;
-
-							detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-								1.1, 2, Size(10, 10));
-							facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
-						}
-
-						if (useGPU)
-						{
-							resized_gpu.download(resized_cpu);
-
-							for (int i = 0; i < detections_num; ++i)
-							{
-								Point c1;
-								c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
-								c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
-
-								Point c2;
-
-								c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
-								c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
-								if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100){
-									rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
-									faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
-									flag = true;
-								}
-							}
-
-
-						}
-
-
-						if(flag){
-
-							resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-							if(numtimes == 0){
-								faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
-								data = data/255.0;
-							}else{
-								faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
-								temp = temp/255.0;
-
-								hconcat(data, temp, data);
-							}
-							numtimes++;
-
-
-							makeInitialSegmentsFlag = false;
-
-							if(numtimes == 10){
-								numSegments++;
-								g = seg(data, numSegments);
-
-							}
-
-
-							if(numtimes > 10 && (numtimes)%4 == 0){
-								g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
-							}
-
-							flag = false;
-
-
-
-						}
-						tm.stop();
-						double detectionTime = tm.getTimeMilli();
-						double fps = 1000 / detectionTime;
-						imshow("result", frame_cpu);
-
-						if(waitKey(5) == 27)
-							return 0;
+					double sim = image_test(data, D, pinvD);
+					if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
+						fout << "1 " << 20-sim << endl;
+					}else{
+						fout << "0 " << 20-sim << endl;
 					}
 
 				}
-				prev = name.substr(0, 5);
+				query_count++;
 			}
-			closedir (dir);
-		} else {
-
-			perror ("");
-			return EXIT_FAILURE;
-		}
-
-#pragma endregion
-	}else if(choice == 1){
-
-		ofstream fout;
-		fout.open("matrix.txt");
-
-
-
-		ifstream ifs("Dictionaries\\dict.bin", ios::binary);
-		vector<Mat> dict;
-		for(int i = 0; i<NUM_DICT; i++){
-			dict.push_back(Mat (ROWS, COLS, CV_64F));
-		}
-		double val;
-		for(int i = 0; i<COLS*NUM_DICT; i++){
-			for(int j = 0; j<ROWS; j++){
-				ifs.read(reinterpret_cast<char*> (&dict.at(i/COLS).at<double>(j, i%COLS)) , sizeof val);
-			}
+			target_count++;
 
 		}
-		ifs.close();
-
-		ifstream ifs1("Dictionaries\\pinvDict.bin", ios::binary);
-		vector<Mat> pinvD;
-		for(int i = 0; i<NUM_DICT; i++){
-			pinvD.push_back(Mat(COLS, ROWS, CV_64F));
-		}
-		for(int i = 0; i<ROWS*NUM_DICT; i++){
-			for(int j = 0; j<COLS; j++){
-				ifs1.read(reinterpret_cast<char*> (&pinvD.at(i/ROWS).at<double>(j, i%ROWS)) , sizeof val);
-			}
-		}
-
-		ifs1.close();
-		string *names = new string[NUM_SUBJECTS];
-
-		ID = 0;
 
 
-		if ((dir = opendir ("C:\\Datasets\\UTD")) != NULL) {
-
-			while ((ent = readdir (dir)) != NULL && ID<NUM_SUBJECTS) {
-				name = ent->d_name;
-				int numtimes = 0;
-				if(name.compare(".") != 0 && name.compare("..") != 0) {
-					if(name.substr(6, 1).compare("1") != 0 && contains(names1, name.substr(0, 5))){
-						ID++;
-					}else{
-						continue;
-					}
-					Mat data;
-					Mat temp;
-					int numSegments = 2;
-
-					VideoCapture capture;
-					Mat image;
-					capture.open("C:\\Datasets\\UTD\\"+name);
-					if (!capture.isOpened())  // if not success, exit program
-					{
-						std::cout << "\nTrying Again....\n" << std::endl;
-						capture.open(inputName);
-					}
-					double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
-
-					for (;;)
-					{
-						if (isInputCamera || isInputVideo)
-						{
-							capture >> frame;
-							if (frame.empty())
-							{	
-
-								vector<int> scores;
-								scores.reserve(NUM_SUBJECTS);
-								int max = 0;
-								int id = 0;
-								int max1 = 0;
-								int id1 = 0;
-								for(int i = 0; i<NUM_SUBJECTS; i++){
-									scores.push_back(0);
-								}
-								std::cout << name << std::endl;
-
-								sim_matrix[ID-1] = image_test(data, dict, pinvD);
-								for(int z = 0; z<NUM_SUBJECTS; z++){
-									fout << names1.at(z) << " " << name << " " << z << " " << ID-1 << " " << (z==ID-1 ? 1 : 0) << " " << sim_matrix[ID-1][z] << std::endl;
-								}
-								std::cout << ID-1 << std::endl;
-
-								break;
-							}	
-						}
-
-						(image.empty() ? frame : image).copyTo(frame_cpu);
-
-						frame_gpu.upload(image.empty() ? frame : image);
-
-						convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
-
-
-						TickMeter tm;
-						tm.start();
-
-						if (useGPU)
-						{
-							//cascade_gpu.visualizeInPlace = true;
-							cascade_gpu.findLargestObject = findLargestObject;
-
-							detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-								1.1, 2, Size(10, 10));
-							facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
-						}
-
-						if (useGPU)
-						{
-							resized_gpu.download(resized_cpu);
-
-							for (int i = 0; i < detections_num; ++i)
-							{
-								Point c1;
-								c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
-								c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
-
-								Point c2;
-								c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
-								c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
-								if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100){
-									rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
-									faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
-									flag = true;
-								}
-							}
-
-
-						}
-
-
-						if(flag){
-
-							resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-							equalizeHist(faceROI_resize, faceROI_resize);
-							if(numtimes == 0){
-								faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
-								data = data/255.0;
-							}else{
-								faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
-								temp = temp/255.0;
-
-								hconcat(data, temp, data);
-							}
-							numtimes++;
-
-
-							makeInitialSegmentsFlag = false;
-
-							if(numtimes == 10){
-								numSegments++;
-								g = seg(data, numSegments);
-
-							}
-
-
-							if(numtimes > 10 && (numtimes)%4 == 0){
-								g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
-							}
-
-							flag = false;
-
-
-
-						}
-						tm.stop();
-						double detectionTime = tm.getTimeMilli();
-						double fps = 1000 / detectionTime;
-						
-
-						if(waitKey(5) == 27)
-							return 0;
-
-					}
-					prev = name.substr(0, 5);
-				}
-
-			}
-		}
-		fout.close();
 	}
-
-	ofstream fout;
-	fout.open("matrix1.txt");
-	for(int i = 0; i<NUM_SUBJECTS; i++){
-		for(int j = 0; j<NUM_SUBJECTS; j++){
-			fout << setprecision(6) << sim_matrix[i][j] << " ";
-		}
-		fout << std::endl;
-	}
-	fout.close();
-
 
 	return 0;
 

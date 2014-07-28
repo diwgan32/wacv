@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<biometric-signature-set
+  xmlns="http://www.bee-biometrics.org/schemas/sigset/0.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation=
+   "http://www.bee-biometrics.org/schemas/sigset/0.1
+    http://www.bee-biometrics.org/schemas/sigset/0.1/simple.xsd">
+
+  <biometric-signature name="ud1S03520" >
+    <presentation name="ud1R06909" modality="Face" file-name="UTD/FaceVisibleVideo/03520v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04520" >
+    <presentation name="ud1R06943" modality="Face" file-name="UTD/FaceVisibleVideo/04520v325.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04523" >
+    <presentation name="ud1R06947" modality="Face" file-name="UTD/FaceVisibleVideo/04523v325.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04529" >
+    <presentation name="ud1R06956" modality="Face" file-name="UTD/FaceVisibleVideo/04529v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04530" >
+    <presentation name="ud1R06958" modality="Face" file-name="UTD/FaceVisibleVideo/04530v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04532" >
+    <presentation name="ud1R06961" modality="Face" file-name="UTD/FaceVisibleVideo/04532v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04533" >
+    <presentation name="ud1R06962" modality="Face" file-name="UTD/FaceVisibleVideo/04533v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04534" >
+    <presentation name="ud1R06964" modality="Face" file-name="UTD/FaceVisibleVideo/04534v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04538" >
+    <presentation name="ud1R06971" modality="Face" file-name="UTD/FaceVisibleVideo/04538v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04539" >
+    <presentation name="ud1R06973" modality="Face" file-name="UTD/FaceVisibleVideo/04539v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04540" >
+    <presentation name="ud1R06974" modality="Face" file-name="UTD/FaceVisibleVideo/04540v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04544" >
+    <presentation name="ud1R06981" modality="Face" file-name="UTD/FaceVisibleVideo/04544v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04545" >
+    <presentation name="ud1R06983" modality="Face" file-name="UTD/FaceVisibleVideo/04545v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04546" >
+    <presentation name="ud1R06985" modality="Face" file-name="UTD/FaceVisibleVideo/04546v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04548" >
+    <presentation name="ud1R06988" modality="Face" file-name="UTD/FaceVisibleVideo/04548v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04554" >
+    <presentation name="ud1R06995" modality="Face" file-name="UTD/FaceVisibleVideo/04554v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04555" >
+    <presentation name="ud1R06996" modality="Face" file-name="UTD/FaceVisibleVideo/04555v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04556" >
+    <presentation name="ud1R06999" modality="Face" file-name="UTD/FaceVisibleVideo/04556v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04559" >
+    <presentation name="ud1R07003" modality="Face" file-name="UTD/FaceVisibleVideo/04559v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04560" >
+    <presentation name="ud1R07005" modality="Face" file-name="UTD/FaceVisibleVideo/04560v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04561" >
+    <presentation name="ud1R07006" modality="Face" file-name="UTD/FaceVisibleVideo/04561v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04562" >
+    <presentation name="ud1R07009" modality="Face" file-name="UTD/FaceVisibleVideo/04562v325.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04564" >
+    <presentation name="ud1R07011" modality="Face" file-name="UTD/FaceVisibleVideo/04564v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04565" >
+    <presentation name="ud1R07013" modality="Face" file-name="UTD/FaceVisibleVideo/04565v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04567" >
+    <presentation name="ud1R07015" modality="Face" file-name="UTD/FaceVisibleVideo/04567v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04571" >
+    <presentation name="ud1R07022" modality="Face" file-name="UTD/FaceVisibleVideo/04571v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04573" >
+    <presentation name="ud1R07025" modality="Face" file-name="UTD/FaceVisibleVideo/04573v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04575" >
+    <presentation name="ud1R07028" modality="Face" file-name="UTD/FaceVisibleVideo/04575v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04576" >
+    <presentation name="ud1R07030" modality="Face" file-name="UTD/FaceVisibleVideo/04576v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04577" >
+    <presentation name="ud1R07032" modality="Face" file-name="UTD/FaceVisibleVideo/04577v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04578" >
+    <presentation name="ud1R07033" modality="Face" file-name="UTD/FaceVisibleVideo/04578v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04579" >
+    <presentation name="ud1R07037" modality="Face" file-name="UTD/FaceVisibleVideo/04579v325.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04582" >
+    <presentation name="ud1R07041" modality="Face" file-name="UTD/FaceVisibleVideo/04582v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04586" >
+    <presentation name="ud1R07048" modality="Face" file-name="UTD/FaceVisibleVideo/04586v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04587" >
+    <presentation name="ud1R07050" modality="Face" file-name="UTD/FaceVisibleVideo/04587v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04588" >
+    <presentation name="ud1R07052" modality="Face" file-name="UTD/FaceVisibleVideo/04588v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04590" >
+    <presentation name="ud1R07054" modality="Face" file-name="UTD/FaceVisibleVideo/04590v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04592" >
+    <presentation name="ud1R07057" modality="Face" file-name="UTD/FaceVisibleVideo/04592v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04593" >
+    <presentation name="ud1R07059" modality="Face" file-name="UTD/FaceVisibleVideo/04593v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04598" >
+    <presentation name="ud1R07064" modality="Face" file-name="UTD/FaceVisibleVideo/04598v425.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04601" >
+    <presentation name="ud1R07068" modality="Face" file-name="UTD/FaceVisibleVideo/04601v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04602" >
+    <presentation name="ud1R07071" modality="Face" file-name="UTD/FaceVisibleVideo/04602v425.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04605" >
+    <presentation name="ud1R07077" modality="Face" file-name="UTD/FaceVisibleVideo/04605v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04613" >
+    <presentation name="ud1R07087" modality="Face" file-name="UTD/FaceVisibleVideo/04613v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04615" >
+    <presentation name="ud1R07090" modality="Face" file-name="UTD/FaceVisibleVideo/04615v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04617" >
+    <presentation name="ud1R07093" modality="Face" file-name="UTD/FaceVisibleVideo/04617v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04624" >
+    <presentation name="ud1R07101" modality="Face" file-name="UTD/FaceVisibleVideo/04624v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04625" >
+    <presentation name="ud1R07103" modality="Face" file-name="UTD/FaceVisibleVideo/04625v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04628" >
+    <presentation name="ud1R07109" modality="Face" file-name="UTD/FaceVisibleVideo/04628v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04631" >
+    <presentation name="ud1R07115" modality="Face" file-name="UTD/FaceVisibleVideo/04631v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04635" >
+    <presentation name="ud1R07121" modality="Face" file-name="UTD/FaceVisibleVideo/04635v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04641" >
+    <presentation name="ud1R07131" modality="Face" file-name="UTD/FaceVisibleVideo/04641v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04645" >
+    <presentation name="ud1R07138" modality="Face" file-name="UTD/FaceVisibleVideo/04645v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04646" >
+    <presentation name="ud1R07140" modality="Face" file-name="UTD/FaceVisibleVideo/04646v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04648" >
+    <presentation name="ud1R07144" modality="Face" file-name="UTD/FaceVisibleVideo/04648v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04657" >
+    <presentation name="ud1R07149" modality="Face" file-name="UTD/FaceVisibleVideo/04657v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04663" >
+    <presentation name="ud1R07158" modality="Face" file-name="UTD/FaceVisibleVideo/04663v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04665" >
+    <presentation name="ud1R07161" modality="Face" file-name="UTD/FaceVisibleVideo/04665v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04677" >
+    <presentation name="ud1R07173" modality="Face" file-name="UTD/FaceVisibleVideo/04677v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04680" >
+    <presentation name="ud1R07179" modality="Face" file-name="UTD/FaceVisibleVideo/04680v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04682" >
+    <presentation name="ud1R07182" modality="Face" file-name="UTD/FaceVisibleVideo/04682v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04683" >
+    <presentation name="ud1R07184" modality="Face" file-name="UTD/FaceVisibleVideo/04683v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04685" >
+    <presentation name="ud1R07188" modality="Face" file-name="UTD/FaceVisibleVideo/04685v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04686" >
+    <presentation name="ud1R07189" modality="Face" file-name="UTD/FaceVisibleVideo/04686v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04688" >
+    <presentation name="ud1R07192" modality="Face" file-name="UTD/FaceVisibleVideo/04688v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04689" >
+    <presentation name="ud1R07193" modality="Face" file-name="UTD/FaceVisibleVideo/04689v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04690" >
+    <presentation name="ud1R07194" modality="Face" file-name="UTD/FaceVisibleVideo/04690v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04694" >
+    <presentation name="ud1R07198" modality="Face" file-name="UTD/FaceVisibleVideo/04694v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04695" >
+    <presentation name="ud1R07199" modality="Face" file-name="UTD/FaceVisibleVideo/04695v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04700" >
+    <presentation name="ud1R07201" modality="Face" file-name="UTD/FaceVisibleVideo/04700v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04707" >
+    <presentation name="ud1R07203" modality="Face" file-name="UTD/FaceVisibleVideo/04707v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04712" >
+    <presentation name="ud1R07208" modality="Face" file-name="UTD/FaceVisibleVideo/04712v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04715" >
+    <presentation name="ud1R07211" modality="Face" file-name="UTD/FaceVisibleVideo/04715v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04719" >
+    <presentation name="ud1R07216" modality="Face" file-name="UTD/FaceVisibleVideo/04719v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04721" >
+    <presentation name="ud1R07221" modality="Face" file-name="UTD/FaceVisibleVideo/04721v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04727" >
+    <presentation name="ud1R07228" modality="Face" file-name="UTD/FaceVisibleVideo/04727v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04728" >
+    <presentation name="ud1R07229" modality="Face" file-name="UTD/FaceVisibleVideo/04728v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04731" >
+    <presentation name="ud1R07233" modality="Face" file-name="UTD/FaceVisibleVideo/04731v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04734" >
+    <presentation name="ud1R07236" modality="Face" file-name="UTD/FaceVisibleVideo/04734v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04735" >
+    <presentation name="ud1R07238" modality="Face" file-name="UTD/FaceVisibleVideo/04735v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04737" >
+    <presentation name="ud1R07240" modality="Face" file-name="UTD/FaceVisibleVideo/04737v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04739" >
+    <presentation name="ud1R07242" modality="Face" file-name="UTD/FaceVisibleVideo/04739v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04622" >
+    <presentation name="ud1R08170" modality="Face" file-name="UTD/FaceVisibleVideo/04622v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04652" >
+    <presentation name="ud1R08213" modality="Face" file-name="UTD/FaceVisibleVideo/04652v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04654" >
+    <presentation name="ud1R08225" modality="Face" file-name="UTD/FaceVisibleVideo/04654v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04658" >
+    <presentation name="ud1R08301" modality="Face" file-name="UTD/FaceVisibleVideo/04658v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04659" >
+    <presentation name="ud1R08328" modality="Face" file-name="UTD/FaceVisibleVideo/04659v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04660" >
+    <presentation name="ud1R08352" modality="Face" file-name="UTD/FaceVisibleVideo/04660v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04669" >
+    <presentation name="ud1R08395" modality="Face" file-name="UTD/FaceVisibleVideo/04669v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04670" >
+    <presentation name="ud1R08399" modality="Face" file-name="UTD/FaceVisibleVideo/04670v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04671" >
+    <presentation name="ud1R08427" modality="Face" file-name="UTD/FaceVisibleVideo/04671v325.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04673" >
+    <presentation name="ud1R08433" modality="Face" file-name="UTD/FaceVisibleVideo/04673v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04674" >
+    <presentation name="ud1R08452" modality="Face" file-name="UTD/FaceVisibleVideo/04674v425.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04693" >
+    <presentation name="ud1R08496" modality="Face" file-name="UTD/FaceVisibleVideo/04693v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04699" >
+    <presentation name="ud1R08547" modality="Face" file-name="UTD/FaceVisibleVideo/04699v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04701" >
+    <presentation name="ud1R08565" modality="Face" file-name="UTD/FaceVisibleVideo/04701v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04705" >
+    <presentation name="ud1R08597" modality="Face" file-name="UTD/FaceVisibleVideo/04705v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04713" >
+    <presentation name="ud1R08659" modality="Face" file-name="UTD/FaceVisibleVideo/04713v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04718" >
+    <presentation name="ud1R08677" modality="Face" file-name="UTD/FaceVisibleVideo/04718v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04725" >
+    <presentation name="ud1R08703" modality="Face" file-name="UTD/FaceVisibleVideo/04725v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04747" >
+    <presentation name="ud1R08868" modality="Face" file-name="UTD/FaceVisibleVideo/04747v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04754" >
+    <presentation name="ud1R09050" modality="Face" file-name="UTD/FaceVisibleVideo/04754v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04756" >
+    <presentation name="ud1R09106" modality="Face" file-name="UTD/FaceVisibleVideo/04756v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04758" >
+    <presentation name="ud1R09188" modality="Face" file-name="UTD/FaceVisibleVideo/04758v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04759" >
+    <presentation name="ud1R09224" modality="Face" file-name="UTD/FaceVisibleVideo/04759v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04760" >
+    <presentation name="ud1R09261" modality="Face" file-name="UTD/FaceVisibleVideo/04760v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04761" >
+    <presentation name="ud1R09290" modality="Face" file-name="UTD/FaceVisibleVideo/04761v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04764" >
+    <presentation name="ud1R09388" modality="Face" file-name="UTD/FaceVisibleVideo/04764v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04775" >
+    <presentation name="ud1R09737" modality="Face" file-name="UTD/FaceVisibleVideo/04775v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04788" >
+    <presentation name="ud1R10148" modality="Face" file-name="UTD/FaceVisibleVideo/04788v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04795" >
+    <presentation name="ud1R10369" modality="Face" file-name="UTD/FaceVisibleVideo/04795v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04800" >
+    <presentation name="ud1R10537" modality="Face" file-name="UTD/FaceVisibleVideo/04800v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04802" >
+    <presentation name="ud1R10612" modality="Face" file-name="UTD/FaceVisibleVideo/04802v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04803" >
+    <presentation name="ud1R10648" modality="Face" file-name="UTD/FaceVisibleVideo/04803v225.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04804" >
+    <presentation name="ud1R10674" modality="Face" file-name="UTD/FaceVisibleVideo/04804v125.dv" file-format="dv" />
+  </biometric-signature>
+  <biometric-signature name="ud1S04807" >
+    <presentation name="ud1R10762" modality="Face" file-name="UTD/FaceVisibleVideo/04807v125.dv" file-format="dv" />
+  </biometric-signature>
+</biometric-signature-set>

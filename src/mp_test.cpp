@@ -14,7 +14,7 @@ double project(Mat img, Mat D, Mat pinvD){
 	return res;
 }
 double* image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
-	Mat dist = Mat(img.cols, D.size(), CV_64F, 0.0);
+
 	Mat temp;
 	double res;
 	double minres = DBL_MAX;
@@ -33,7 +33,26 @@ double* image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 		sim_mat[j] = minres;
 		minres = DBL_MAX;
 	}
-	
+
 	return sim_mat;
+}
+
+double image_test(Mat img, Mat D, Mat pinvD){
+	Mat temp;
+	double res;
+	double minres = DBL_MAX;
+	Mat temp1(400, 1, CV_64F);
+	double sim;
+	for(int i = 0; i<img.cols; i++){
+
+		temp1 = img.col(i);
+		res = project(temp1, D, pinvD);
+		if(res < minres){
+			minres = res;
+		}
+
+	}
+	sim = minres;
+	return sim;
 }
 

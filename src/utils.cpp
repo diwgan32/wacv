@@ -5,7 +5,7 @@ using namespace cv;
 Mat readBin(const char * filename, int numRows, int numCols){
 	std::ifstream ifs(filename, std::ios::binary);
 	Mat result(numRows, 1, CV_64F);
-	Mat temp(400, 1, CV_64F);
+	Mat temp(numRows, 1, CV_64F);
 	bool flag = false;
 	double val;
 	for(int i = 0; i<numCols; i++){
@@ -22,7 +22,7 @@ Mat readBin(const char * filename, int numRows, int numCols){
 		}
 		
 		if(flag){
-		hconcat(temp, result, result);
+		hconcat(result, temp, result);
 		}
 	}
 	ifs.close();
