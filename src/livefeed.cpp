@@ -17,7 +17,7 @@ using namespace cv::gpu;
 using namespace rapidxml;
 #define NUM_DICT 15
 #define NUM_SUBJECTS 15
-#define COLS 30
+#define COLS 9
 #define ROWS 400
 
 
@@ -339,6 +339,9 @@ int main(int argc, const char *argv[])
 		Groupings g;
 		ofstream fout;
 		fout.open("SimMat.txt");
+		ofstream fout1;
+		fout1.open("SimMat1.txt");
+
 		int numTargets = 0;
 		DIR *dir;
 		struct dirent *ent;
@@ -440,9 +443,11 @@ int main(int argc, const char *argv[])
 
 					double sim = image_test(data, D, pinvD);
 					if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
-						fout << "1 " << 20-sim << endl;
+						fout << "1 " << endl;
+						fout1 << 20-sim << endl;
 					}else{
-						fout << "0 " << 20-sim << endl;
+						fout << "0 " << endl;
+						fout1 << 20-sim << endl;
 					}
 
 				}
@@ -452,7 +457,8 @@ int main(int argc, const char *argv[])
 
 		}
 
-
+		fout1.close();
+		fout.close();
 	}
 
 	return 0;

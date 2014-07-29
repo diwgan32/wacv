@@ -14,24 +14,24 @@ subject_idx = 481;
 K = 3;
 
 
-dictsize = 10;
+dictsize = 3;
 iternum = 20;
 
 G = cell(subject_idx, K);
 for i=1:subject_idx,
     
-    var = strcat('Subjects\',int2str(i-1),'-*********.mat');
+    var = strcat('Subjects1\',int2str(i-1),'-*********.mat');
     d = dir(var);
-    var = strcat('Subjects\', d.name);
-    if strcmp(var, 'Subjects\') == 1,
+    var = strcat('Subjects1\', d.name);
+    if strcmp(var, 'Subjects1\') == 1,
         continue;
     end
     
     load (var);
     
-    var = strcat('Segments\',int2str(i-1),'-*********.mat');
+    var = strcat('Segments1\',int2str(i-1),'-*********.mat');
     d = dir(var);
-    var = strcat('Segments\',d.name);
+    var = strcat('Segments1\',d.name);
     load(var);
     G = cell(subject_idx, K);
     img_gallery = [];
@@ -71,11 +71,11 @@ for i=1:subject_idx,
     
     k=strfind(var, '.');
     
-    filename = strcat('Dictionaries\', var(1, 10:k-1), '.bin');
+    filename = strcat('Dictionaries\', var(1, strfind(var, '-')+1:k-1), '.bin');
     fid = fopen(filename, 'w');
     fwrite(fid, printD, 'double');
     fclose(fid);
-    filename = strcat('InverseDictionaries\', var(1, 10:k-1), '.bin');
+    filename = strcat('InverseDictionaries\', var(1, strfind(var, '-')+1:k-1), '.bin');
     fid = fopen(filename, 'w');
     fwrite(fid, printPINVD, 'double');
     fclose(fid);
