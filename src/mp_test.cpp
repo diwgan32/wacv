@@ -1,6 +1,11 @@
 #include "includes.h"
 
 using namespace cv;
+
+/*
+ * Function to calculate residuals between
+ * query frames and a dictionary.
+*/
 double project(Mat img, Mat D, Mat pinvD){
 	Mat feature;
 
@@ -13,6 +18,15 @@ double project(Mat img, Mat D, Mat pinvD){
 
 	return res;
 }
+
+/* 
+ * Legacy function that returns an array of similarity
+ * values to be incorporated into similarity matrix. Used
+ * when only 10 subjects were trained. When more test
+ * data was incorporated, the function was modified to
+ * only return one value. See below..
+*/
+
 double* image_test(Mat img, vector<Mat> D, vector<Mat> pinvD){
 
 	Mat temp;
@@ -43,6 +57,8 @@ double image_test(Mat img, Mat D, Mat pinvD){
 	double minres = DBL_MAX;
 	Mat temp1(400, 1, CV_64F);
 	double sim;
+
+	//Loop through all frames and find minimum residual.
 	for(int i = 0; i<img.cols; i++){
 
 		temp1 = img.col(i);

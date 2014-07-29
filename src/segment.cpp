@@ -5,6 +5,12 @@ using namespace cv;
 using namespace std;
 
 
+/* 
+ * Function to determine initial groupings of frames
+ * As frames are generated, addFrames() will be used 
+ * to incorporate them into the groupings
+*/
+
 Groupings myKMeans(Mat Y, int k){
 
 	Mat dist = Mat(Y.rows, Y.rows, CV_64F, 0.0f);
@@ -100,18 +106,11 @@ Groupings myKMeans(Mat Y, int k){
 	return g;
 }
 
-Groupings createCenters(Groupings g, Mat data, int k){
-	srand(time(NULL));
-	Mat temp(400, 1, CV_64F);
-	for(int i = 0; i<k; i++){
-
-		g.centers.push_back(data.col(rand()%data.cols));
-		g.count.push_back(1);
-	}
-	g.segments = new vector<int>[k];
-	//cout << g.centers.at(0) << endl;
-	return g;
-}
+/*
+ * Because the addFrames() function moves the centroids,
+ * the groupings need to be redetermined as per the 
+ * new centroids
+*/
 Groupings reset(Mat data, Groupings g, int k){
 	double dist = 0;
 	double mindist = 10000.0;
@@ -136,6 +135,12 @@ Groupings reset(Mat data, Groupings g, int k){
 	}
 	return g;
 }
+
+/*
+ * Add a set of 4 frames to the partitions as per the
+ * mini-batch k-means algorithm
+*/
+
 Groupings addFrame(Groupings g, Mat frame, int frameid, int k){
 
 	double dist = 0;
@@ -202,7 +207,9 @@ double scatter(Mat data, Groupings g, int k){
 
 }
 
-
+/*
+ * Determine the initial partitions
+*/
 Groupings seg(Mat ImgData, int k){
 
 	Groupings g;
@@ -221,98 +228,16 @@ Groupings seg(Mat ImgData, int k){
 	double maxscr = -10000;
 	return myKMeans(Z, k);
 
-
-	/*
-	bool flg = false;
-	vector<int> * sgt = new vector<int>[k];
-	vector<int> * bestsgt = new vector<int>[k];
-	srand(time(NULL));
-	double minD = 1000.0;
-	double D = 0;
-	int minidx = 1;
-
-	double err = 0;
-	double div = 0;
-	double scr = 0;
-
-	Mat miu(1, 400, CV_64F);
-	for(int itr = 0; itr<N; itr++){
-
-	for(int j = 0; j<k; j++){
-
-	sgt[j].push_back(grp[j].at(rand()%(grp[j].size())));
-	}
-
-	for(int i = 0; i<ImgData.cols; i++){
-	minD = 1000.0;
-	D = 0;
-	minidx = 0;
-	for(int j = 0; j<k; j++){
-	if(i==sgt[j].at(0)){
-	flg = true;
-	break;
-	}
-
-	D = norm(Z.row(i) - Z.row(sgt[j].at(0)), 4);
-	if(D < minD){
-	minD = D;
-	minidx = j;
-	}
-	}
-
-	if(flg){
-	flg = !flg;
-	continue;
-	}
-
-	sgt[minidx].push_back(i);
-	}
-
-	err = 0;
-	for(int j = 0; j<k; j++){
-	for(int z = 1; z<sgt[j].size(); z++){
-	err += std::pow(norm(Z.row(sgt[j].at(z)) - Z.row(sgt[j].at(0)), 4), 2.0);
-	}
-	}
-
-	miu = 0;
-
-	for(int j = 0; j<k; j++){
-	miu += Z.row(sgt[j].at(0));
-	}
-	miu = miu/double(k);
-
-	div = 0;
-	for(int j = 0; j<k; j++){
-	div = div + pow(norm(miu - Z.row(sgt[j].at(0)), 4), 2.0);
-	}
-
-	scr = div/err;
-
-	if(scr > maxscr){
-	maxscr = scr;
-	for(int j = 0; j<k; j++){
-	bestsgt[j].clear();
-	}
-	for(int j = 0; j<k; j++){
-
-	g.segments[j] = vector<int>(sgt[j].begin()+1, sgt[j].end());
-	g.centers.at(j) = ImgData.col(sgt[j].at(0));
-	}
-	}
-
-	for(int j = 0; j<k; j++){
-	sgt[j].clear();
-	}
-
-	}
-	return g;
-	*/
 }
 
 
+/* 
+ * Utility function that returns a set of matrices,
+ * each one with the same pose and illumination.
+*/
+
 vector<Mat> splitBySegment(Mat data, Groupings g){
-	int k = g.centers.size();
+	size_t k = g.centers.size();
 	vector<Mat> split;
 	split.reserve(k);
 	Mat temp;
@@ -335,113 +260,3 @@ vector<Mat> splitBySegment(Mat data, Groupings g){
 	return split;
 }
 
-Groupings seg1(Mat ImgData, int k){
-
-
-
-	Groupings g;
-	g.segments = new vector<int>[k];
-	for(int i = 0; i<k; i++){
-		g.centers.push_back(Mat());
-		g.count.push_back(0);
-	}
-	Mat Z = ImgData;
-	transpose(Z, Z);
-
-
-
-	int N = 10;
-
-	double maxscr = -10000;
-	Groupings g2 =  myKMeans(Z, k);
-
-
-	bool flg = false;
-	vector<int> * sgt = new vector<int>[k];
-	vector<int> * bestsgt = new vector<int>[k];
-	srand(time(NULL));
-	double minD = 1000.0;
-	double D = 0;
-	int minidx = 1;
-
-	double err = 0;
-	double div = 0;
-	double scr = 0;
-
-	Mat miu(1, 400, CV_64F);
-	for(int itr = 0; itr<N; itr++){
-
-		for(int j = 0; j<k; j++){
-
-			sgt[j].push_back(g2.segments[j].at(rand()%(g2.segments[j].size())));
-		}
-
-		for(int i = 0; i<ImgData.cols; i++){
-			minD = 1000.0;
-			D = 0;
-			minidx = 0;
-			for(int j = 0; j<k; j++){
-				if(i==sgt[j].at(0)){
-					flg = true;
-					break;
-				}
-
-				D = norm(Z.row(i) - Z.row(sgt[j].at(0)), 4);
-				if(D < minD){
-					minD = D;
-					minidx = j;
-				}
-			}
-
-			if(flg){
-				flg = !flg;
-				continue;
-			}
-
-			sgt[minidx].push_back(i);
-		}
-
-		err = 0;
-		for(int j = 0; j<k; j++){
-			for(int z = 1; z<sgt[j].size(); z++){
-				err += std::pow(norm(Z.row(sgt[j].at(z)) - Z.row(sgt[j].at(0)), 4), 2.0);
-			}
-		}
-
-		miu = 0;
-
-		for(int j = 0; j<k; j++){
-			miu += Z.row(sgt[j].at(0));
-		}
-		miu = miu/double(k);
-
-		div = 0;
-		for(int j = 0; j<k; j++){
-			div = div + pow(norm(miu - Z.row(sgt[j].at(0)), 4), 2.0);
-		}
-
-		scr = div/err;
-
-		if(scr > maxscr){
-			maxscr = scr;
-			for(int j = 0; j<k; j++){
-				bestsgt[j].clear();
-			}
-			for(int j = 0; j<k; j++){
-
-				g.segments[j] = vector<int>(sgt[j].begin(), sgt[j].end());
-				g.centers.at(j) = ImgData.col(sgt[j].at(0));
-			}
-		}
-
-		for(int j = 0; j<k; j++){
-			sgt[j].clear();
-		}
-
-	}
-	return g;
-
-
-
-
-}

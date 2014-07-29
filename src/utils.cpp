@@ -7,7 +7,7 @@ Mat readBin(const char * filename, int numRows, int numCols){
 	Mat result(numRows, 1, CV_64F);
 	Mat temp(numRows, 1, CV_64F);
 	bool flag = false;
-	double val;
+	double val = 0;
 	for(int i = 0; i<numCols; i++){
 		for(int j = 0; j<numRows; j++){
 			if(i==0){

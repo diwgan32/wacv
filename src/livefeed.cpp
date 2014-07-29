@@ -55,13 +55,11 @@ bool contains(const std::vector<T> &vec, const T &value)
 
 int main(int argc, const char *argv[])
 {
-
-
-
-
 	
 
-	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
+	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice()); //Load GPU
+
+	/* Load cascades */
 	string cascadeName = "HaarCascades\\haarcascade_frontalface_alt.xml";
 	CascadeClassifier_GPU cascade_gpu;
 	CascadeClassifier cascade_cpu;
@@ -70,30 +68,18 @@ int main(int argc, const char *argv[])
 
 
 	
-
-	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, frameDisp;
+	/*Initialize matrices*/
+	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, faceROI, faceROI_resize;
 	vector<Rect> facesBuf_cpu;
-
 	GpuMat frame_gpu, gray_gpu, resized_gpu, facesBuf_gpu;
 
-	Groupings g;
 	int detections_num;
 
 
 	bool flag = false;
-	int var = 0;
+
 	bool isSpaceBarPressed = false;
 	bool makeInitialSegmentsFlag = false;
-
-	double ** sim_matrix;
-
-	sim_matrix = new double*[NUM_SUBJECTS];
-	for(int i = 0; i<NUM_SUBJECTS; i++){
-		sim_matrix[i] = new double[NUM_SUBJECTS];
-	}
-
-	Mat faceROI;
-	Mat faceROI_resize;
 
 	std::cout << "Train or recog?: ";
 
@@ -102,9 +88,11 @@ int main(int argc, const char *argv[])
 
 	if(choice == 0){
 		namedWindow("result", 1);
-		vector<string> names1;	
+		vector<string> target_names;	
 		xml_document<> doc;
-		std::ifstream file("utdsigsets//face_walking_video.xml");
+
+		/*Load sigsets*/
+		std::ifstream file("utdsigsets//face_walking_video.xml"); //Note: face_walking_video is UTD target sigset
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		file.close();
@@ -112,58 +100,62 @@ int main(int argc, const char *argv[])
 		doc.parse<0>(&content[0]);
 
 		xml_node<> *pRoot = doc.first_node();
-		int count = 0;
-		string prev = "";
-
+		int numberOfVideosToTrain = 0;
 		int ID = 0;
-		ID = 0;
+
+		/*Loop through xml file and extract filenames on the target sigset*/
 		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
 		{
 
-			names1.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
+			target_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
 
-			prev = names1.at(count).substr(0, 5);
-			count++;
+			numberOfVideosToTrain++;
 		}
-		cout << "Number of videos to train: " << count << endl;
-		cout << endl << endl;
+		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
+		
+		/* Ask user to input which video in UTD dataset to start training on */
 		string startPos;
 		cout << "Enter starting video, or 0 to start at beginning: ";
 		cin >> startPos;
 		cout << endl;
+
+		/* Offset the ID variable accordingly */
 		if(startPos.compare("0") == 0){
 			ID = 0;
 		}else{
-			while(names1.at(ID).compare(startPos) != 0){
+			while(target_names.at(ID).compare(startPos) != 0){
 				ID++;
 			}
 		}
 
-		while(ID<names1.size()){
+		Groupings g;
+		//Loop through target names
+		while(ID<target_names.size()){
 			cout << ID << "   ";
-			string name = names1.at(ID);
+			string name = target_names.at(ID);
 
-			int numtimes = 0;
-			Mat data;
+			int numberOfFramesCollected = 0; 
+
+			Mat setOfAllFramesCollected;
 			Mat temp;
-			int numSegments = 2;
+			int numSegments = 3;
 
 			VideoCapture capture;
-			Mat image;
-			capture.open("C:\\UTD\\"+names1.at(ID));
+			capture.open("C:\\UTD\\"+target_names.at(ID));
 			double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
 
 
 
 			for (;;)
 			{
-				capture >> frame;
+				capture >> frame; //Get next frame from stream
 #pragma region WRITE_DATA
 				if (frame.empty())
 				{
-					if(numtimes > 10){
+					// Only write data if enough frames were collected
+					if(numberOfFramesCollected > 10){
 
-						g = reset(data, g, numSegments);
+						g = reset(setOfAllFramesCollected, g, numSegments);
 						MATFile *pmat;
 						mxArray *pa1;
 
@@ -178,6 +170,11 @@ int main(int argc, const char *argv[])
 						string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
 						pmat = matOpen(filename.c_str(), "w");
 
+						/* 
+						 * Since segment data is not an exact rectangular
+						 * array, all the holes in the data are filled
+						 * with -1s.
+						*/
 						double * data2;
 						int count = 0;
 						data2 = new double[numSegments*maxnum];
@@ -206,23 +203,23 @@ int main(int argc, const char *argv[])
 
 
 
-						pa1 = mxCreateDoubleMatrix(400, numtimes, mxREAL);
+						pa1 = mxCreateDoubleMatrix(400, numberOfFramesCollected, mxREAL);
 						filename = "Subjects\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
 						pmat = matOpen(filename.c_str(), "w");
 
 						double * data1;
-						data1 = new double[numtimes*400];
+						data1 = new double[numberOfFramesCollected*400];
 						count = 0;
-						for(int i = 0; i<numtimes; i++){
+						for(int i = 0; i<numberOfFramesCollected; i++){
 							for(int j = 0; j<400; j++){
-								data1[count] = data.at<double>(j, i);
+								data1[count] = setOfAllFramesCollected.at<double>(j, i);
 								count++;
 							}
 
 						}
 
 
-						memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numtimes);
+						memcpy((void *)(mxGetPr(pa1)), data1, sizeof(data1)*400*numberOfFramesCollected);
 						status = matPutVariable(pmat, "SubjectData", pa1);
 
 						if (status != 0) {
@@ -244,18 +241,24 @@ int main(int argc, const char *argv[])
 				tm.start();
 #pragma region ACCUMULATE_FRAMES
 				frame.copyTo(frame_cpu);
-				frame_gpu.upload(image.empty() ? frame : image);
+				frame_gpu.upload(frame);
 
 				convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
 
 
 				cascade_gpu.findLargestObject = true;
 
+				// Find faces
 				detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
 					1.1, 2, Size(10, 10));
 				facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 				resized_gpu.download(resized_cpu);
 
+				/*
+				 Loop through every single face. Important to note
+				 that only the last face on the list will be
+				 taken into account
+				*/
 				for (int i = 0; i < detections_num; ++i)
 				{
 					Point c1;
@@ -276,33 +279,40 @@ int main(int argc, const char *argv[])
 							flag = true;
 					}
 				}
+
+				// Only add faces to the set if a face was detected
 				if(flag){
 
 					resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
 					equalizeHist(faceROI_resize, faceROI_resize);
-					if(numtimes == 0){
-						faceROI_resize.reshape(1, 400).convertTo(data, CV_64F, 1, 0);
-						data = data/255.0;
+
+					/* 
+					If first frame, add to set, otherwise, use temp matrix and 
+					concactenate matrices
+					*/
+
+					if(numberOfFramesCollected == 0){
+						faceROI_resize.reshape(1, 400).convertTo(setOfAllFramesCollected, CV_64F, 1, 0);
+						setOfAllFramesCollected = setOfAllFramesCollected/255.0;
 					}else{
 						faceROI_resize.reshape(1, 400).convertTo(temp, CV_64F, 1, 0);
 						temp = temp/255.0;
-
-						hconcat(data, temp, data);
+						hconcat(setOfAllFramesCollected, temp, setOfAllFramesCollected);
 					}
-					numtimes++;
+					numberOfFramesCollected++;
 
 
 					makeInitialSegmentsFlag = false;
 
-					if(numtimes == 10){
-						numSegments++;
-						g = seg(data, numSegments);
+					// If 10 frames have been collected, create segments
+					if(numberOfFramesCollected == 10){
+						g = seg(setOfAllFramesCollected, numSegments);
 
 					}
 
-
-					if(numtimes > 10 && (numtimes)%4 == 0){
-						g = addFrame(g, data.colRange(Range(numtimes-4, numtimes)), numtimes, numSegments);
+					//Keep adding frames to set every time 4 frames have been accumulated
+					if(numberOfFramesCollected > 10 && (numberOfFramesCollected)%4 == 0){
+						g = addFrame(g, setOfAllFramesCollected.colRange(Range(numberOfFramesCollected-4, numberOfFramesCollected)), numberOfFramesCollected, numSegments);
 					}
 
 					flag = false;
@@ -311,6 +321,8 @@ int main(int argc, const char *argv[])
 
 				}
 #pragma endregion
+				
+				/* Performance metrics */
 				tm.stop();
 				double detectionTime = tm.getTimeMilli();
 				double fps = 1000 / detectionTime;
@@ -324,7 +336,7 @@ int main(int argc, const char *argv[])
 
 		}
 	}else if (choice == 1){
-
+		Groupings g;
 		ofstream fout;
 		fout.open("SimMat.txt");
 		int numTargets = 0;
