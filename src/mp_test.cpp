@@ -71,4 +71,3 @@ double image_test(Mat img, Mat D, Mat pinvD){
 	sim = minres;
 	return sim;
 }
-

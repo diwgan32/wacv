@@ -14,12 +14,13 @@ subject_idx = 481;
 K = 3;
 
 
-dictsize = 3;
+dictsize = 5;
 iternum = 20;
 
 G = cell(subject_idx, K);
 for i=1:subject_idx,
-    
+    G = cell(subject_idx, K);
+
     var = strcat('Subjects1\',int2str(i-1),'-*********.mat');
     d = dir(var);
     var = strcat('Subjects1\', d.name);
@@ -41,7 +42,12 @@ for i=1:subject_idx,
     for j=1:K,
         for k=1:size(Segments, 2),
             if Segments(j, k) ~= -1,
-                G{i, j} = [G{i, j} SubjectData(:, (Segments(j, k))+1)];
+                if Segments(j, k)+1 > size(SubjectData, 2),
+                    G{i, j} = [G{i, j} SubjectData(:, size(SubjectData, 2))];
+                else
+                    G{i, j} = [G{i, j} SubjectData(:, (Segments(j, k))+1)];
+                end
+           
             end
         end
         

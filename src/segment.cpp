@@ -95,11 +95,9 @@ Groupings myKMeans(Mat Y, int k){
 				bestj = j;
 			}
 		}
-		if(i == 0){
-			g.segments[bestj].push_back(i);
-		} else{
-			g.segments[bestj].push_back(i-1);
-		}
+		
+		g.segments[bestj].push_back(i);
+	
 		g.count.at(bestj)+=1;
 	}
 
@@ -161,7 +159,7 @@ Groupings addFrame(Groupings g, Mat frame, int frameid, int k){
 				bestj = j;
 			}
 		}
-		g.segments[bestj].push_back(frameid-(3-i)-1);
+		g.segments[bestj].push_back(frameid-(3-i));
 		centers[i] = bestj;
 
 	}

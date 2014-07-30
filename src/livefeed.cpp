@@ -17,7 +17,7 @@ using namespace cv::gpu;
 using namespace rapidxml;
 #define NUM_DICT 15
 #define NUM_SUBJECTS 15
-#define COLS 9
+#define COLS 15
 #define ROWS 400
 
 
@@ -55,7 +55,7 @@ bool contains(const std::vector<T> &vec, const T &value)
 
 int main(int argc, const char *argv[])
 {
-	
+
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice()); //Load GPU
 
@@ -65,9 +65,11 @@ int main(int argc, const char *argv[])
 	CascadeClassifier cascade_cpu;
 	cascade_gpu.load(cascadeName);
 
+	Mat d;
+	Mat c;
 
+	Mat f = c*d;
 
-	
 	/*Initialize matrices*/
 	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, faceROI, faceROI_resize;
 	vector<Rect> facesBuf_cpu;
@@ -86,33 +88,127 @@ int main(int argc, const char *argv[])
 	int choice;
 	cin >> choice;
 
+	if(choice == 3){
+		DIR *dir;
+		struct dirent *ent;
+		string name;
+		vector<string> target_names;
+
+		int target_count = 0;
+		if ((dir = opendir ("Subjects1\\")) != NULL) {
+
+			while ((ent = readdir (dir)) != NULL) {
+				name = ent->d_name;
+				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
+					target_names.push_back(name);
+
+				}
+			}
+		}
+		int ID = 0;
+		while(ID<target_names.size()){
+			name = target_names.at(ID);
+			MATFile *pMat;
+			pMat = matOpen(("Subjects1\\"+target_names.at(ID)).c_str(), "r");
+			mxArray * subjectData;
+			subjectData = matGetVariable(pMat, "SubjectData");
+
+			int numFrames = mxGetN(subjectData);
+			double * data1 = new double[400*numFrames];
+			memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*400*numFrames);
+
+			int count = 0;
+			Mat data(400, numFrames, CV_64F);
+			for(int i = 0; i<numFrames; i++){
+				for(int j = 0; j<400; j++){
+					data.at<double>(j, i) = data1[count];
+					count++;
+				}
+			}
+
+			matClose(pMat);
+			delete data1;
+			mxDestroyArray(subjectData);
+
+			int numSegments = 4;
+			Groupings g;
+			g = seg(data.colRange(Range(0, 10)), numSegments);
+
+			int numberOfFramesCollected = 10;
+
+			while(numberOfFramesCollected+4 < numFrames){
+				numberOfFramesCollected += 4;
+				g = addFrame(g, data.colRange(Range(numberOfFramesCollected-4, numberOfFramesCollected)), numberOfFramesCollected, numSegments);
+			}
+
+			g = reset(data, g, numSegments);
+
+			int maxnum = 0;
+			for(int j = 0; j<numSegments; j++){
+
+				if(g.segments[j].size()>maxnum){
+					maxnum = g.segments[j].size();
+				}
+			}
+			mxArray * pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
+			string filename = "Segments\\"+name;
+			pMat  = matOpen(filename.c_str(), "w");
+
+			/* 
+			* Since segment data is not an exact rectangular
+			* array, all the holes in the data are filled
+			* with -1s.
+			*/
+			double * data2;
+			count = 0;
+			data2 = new double[numSegments*maxnum];
+			for(int j = 0; j<maxnum; j++){
+				for(int k = 0; k<numSegments;  k++){
+					if(j>=g.segments[k].size()){
+						data2[count] = -1;
+					}
+					else{
+						data2[count] = g.segments[k].at(j);
+					}
+					count++;
+				}
+			}
+
+			memcpy((void *)(mxGetPr(pa1)), data2, sizeof(data2)*maxnum*numSegments);
+			int status = matPutVariable(pMat, "Segments", pa1);
+			if (status != 0) {
+
+				printf("%s :  Error using matPutVariable on line %d\n", __FILE__, __LINE__);
+				return(EXIT_FAILURE);
+			}  
+
+			delete data2;
+			mxDestroyArray(pa1);
+			matClose(pMat);
+			ID++;
+		}
+	}
+
 	if(choice == 0){
-		namedWindow("result", 1);
-		vector<string> target_names;	
-		xml_document<> doc;
+		DIR *dir;
+		struct dirent *ent;
+		string name;
+		vector<string> target_names;
 
-		/*Load sigsets*/
-		std::ifstream file("utdsigsets//face_walking_video.xml"); //Note: face_walking_video is UTD target sigset
-		std::stringstream buffer;
-		buffer << file.rdbuf();
-		file.close();
-		std::string content(buffer.str());
-		doc.parse<0>(&content[0]);
+		int target_count = 0;
+		if ((dir = opendir ("Subjects\\")) != NULL) {
 
-		xml_node<> *pRoot = doc.first_node();
-		int numberOfVideosToTrain = 0;
+			while ((ent = readdir (dir)) != NULL) {
+				name = ent->d_name;
+				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
+					target_names.push_back(name);
+
+				}
+			}
+		}
 		int ID = 0;
 
-		/*Loop through xml file and extract filenames on the target sigset*/
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
 
-			target_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
-
-			numberOfVideosToTrain++;
-		}
-		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
-		
 		/* Ask user to input which video in UTD dataset to start training on */
 		string startPos;
 		cout << "Enter starting video, or 0 to start at beginning: ";
@@ -138,7 +234,7 @@ int main(int argc, const char *argv[])
 
 			Mat setOfAllFramesCollected;
 			Mat temp;
-			int numSegments = 3;
+			int numSegments = 2;
 
 			VideoCapture capture;
 			capture.open("C:\\UTD\\"+target_names.at(ID));
@@ -167,13 +263,13 @@ int main(int argc, const char *argv[])
 							}
 						}
 						pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
-						string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
+						string filename = "Segments\\"+name;
 						pmat = matOpen(filename.c_str(), "w");
 
 						/* 
-						 * Since segment data is not an exact rectangular
-						 * array, all the holes in the data are filled
-						 * with -1s.
+						* Since segment data is not an exact rectangular
+						* array, all the holes in the data are filled
+						* with -1s.
 						*/
 						double * data2;
 						int count = 0;
@@ -255,9 +351,9 @@ int main(int argc, const char *argv[])
 				resized_gpu.download(resized_cpu);
 
 				/*
-				 Loop through every single face. Important to note
-				 that only the last face on the list will be
-				 taken into account
+				Loop through every single face. Important to note
+				that only the last face on the list will be
+				taken into account
 				*/
 				for (int i = 0; i < detections_num; ++i)
 				{
@@ -321,7 +417,7 @@ int main(int argc, const char *argv[])
 
 				}
 #pragma endregion
-				
+
 				/* Performance metrics */
 				tm.stop();
 				double detectionTime = tm.getTimeMilli();
@@ -385,7 +481,7 @@ int main(int argc, const char *argv[])
 			cout << target_count << "\t";
 			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
 			Mat pinvD = readBin(("InverseDictionaries\\"+target_names.at(target_count)+".bin").c_str(), COLS, ROWS);
-			
+
 			int query_count = 0;
 
 			while(query_count < query_names.size()){
@@ -396,11 +492,10 @@ int main(int argc, const char *argv[])
 						continue;
 					}
 					MATFile *pMat;
-					
 					pMat = matOpen(("Subjects\\"+query_names.at(query_count)+".mat").c_str(), "r");
 					mxArray * subjectData;
 					subjectData = matGetVariable(pMat, "SubjectData");
-					
+
 					int numFrames = mxGetN(subjectData);
 					double * data1 = new double[400*numFrames];
 					memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*400*numFrames);
