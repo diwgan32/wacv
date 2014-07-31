@@ -92,7 +92,7 @@ int main(int argc, const char *argv[])
 		xml_document<> doc;
 
 		/*Load sigsets*/
-		std::ifstream file("utdsigsets//face_walking_video.xml"); //Note: face_walking_video is UTD target sigset
+		std::ifstream file("mbgcsigsets\\video_hd_frontal_session1.xml"); //Note: face_walking_video is UTD target sigset
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		file.close();
@@ -107,9 +107,10 @@ int main(int argc, const char *argv[])
 		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
 		{
 
-			target_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
+			target_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(14));
 
 			numberOfVideosToTrain++;
+			cout << string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(14) << endl;
 		}
 		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
 		
@@ -141,7 +142,7 @@ int main(int argc, const char *argv[])
 			int numSegments = 3;
 
 			VideoCapture capture;
-			capture.open("C:\\UTD\\"+target_names.at(ID));
+			capture.open("C:\\MBGC\\FaceVisibleVideoClips\\"+target_names.at(ID));
 			double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
 
 
@@ -241,11 +242,12 @@ int main(int argc, const char *argv[])
 				tm.start();
 #pragma region ACCUMULATE_FRAMES
 				frame.copyTo(frame_cpu);
+			
 				frame_gpu.upload(frame);
 
 				convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
 
-
+				//gpu::equalizeHist(resized_gpu, resized_gpu);
 				cascade_gpu.findLargestObject = true;
 
 				// Find faces
@@ -269,12 +271,12 @@ int main(int argc, const char *argv[])
 
 					c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
 					c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
-					if((faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale) < 100 && 
+					if((faces_downloaded.ptr<cv::Rect>()[i].width) < 60 && 
 
-						faces_downloaded.ptr<cv::Rect>()[i].y*(1/scale) < 250){
+						faces_downloaded.ptr<cv::Rect>()[i].x < 250){
 
 
-							rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
+							rectangle(resized_cpu, faces_downloaded.ptr<cv::Rect>()[i], Scalar(255), 1, 8, 0);
 							faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
 							flag = true;
 					}
@@ -284,7 +286,7 @@ int main(int argc, const char *argv[])
 				if(flag){
 
 					resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-					equalizeHist(faceROI_resize, faceROI_resize);
+					
 
 					/* 
 					If first frame, add to set, otherwise, use temp matrix and 
@@ -326,7 +328,7 @@ int main(int argc, const char *argv[])
 				tm.stop();
 				double detectionTime = tm.getTimeMilli();
 				double fps = 1000 / detectionTime;
-				imshow("result", frame_cpu);
+				imshow("result", resized_cpu);
 
 				if(waitKey(5) == 27)
 					return 0;
