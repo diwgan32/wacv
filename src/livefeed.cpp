@@ -65,10 +65,6 @@ int main(int argc, const char *argv[])
 	CascadeClassifier cascade_cpu;
 	cascade_gpu.load(cascadeName);
 
-	Mat d;
-	Mat c;
-
-	Mat f = c*d;
 
 	/*Initialize matrices*/
 	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, faceROI, faceROI_resize;
@@ -190,23 +186,31 @@ int main(int argc, const char *argv[])
 	}
 
 	if(choice == 0){
-		DIR *dir;
-		struct dirent *ent;
-		string name;
-		vector<string> target_names;
+vector<string> target_names;	
+		xml_document<> doc;
 
-		int target_count = 0;
-		if ((dir = opendir ("Subjects\\")) != NULL) {
+		/*Load sigsets*/
+		std::ifstream file("utdsigsets//face_walking_video.xml"); //Note: face_walking_video is UTD target sigset
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		file.close();
+		std::string content(buffer.str());
+		doc.parse<0>(&content[0]);
 
-			while ((ent = readdir (dir)) != NULL) {
-				name = ent->d_name;
-				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
-					target_names.push_back(name);
-
-				}
-			}
-		}
+		xml_node<> *pRoot = doc.first_node();
+		int numberOfVideosToTrain = 0;
 		int ID = 0;
+
+		/*Loop through xml file and extract filenames on the target sigset*/
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+
+			target_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21));
+
+			numberOfVideosToTrain++;
+		}
+		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
+		
 
 
 		/* Ask user to input which video in UTD dataset to start training on */
@@ -228,7 +232,7 @@ int main(int argc, const char *argv[])
 		//Loop through target names
 		while(ID<target_names.size()){
 			cout << ID << "   ";
-			string name = target_names.at(ID);
+			string name = target_names.at(ID).substr(0, 9);
 
 			int numberOfFramesCollected = 0; 
 
@@ -263,7 +267,7 @@ int main(int argc, const char *argv[])
 							}
 						}
 						pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
-						string filename = "Segments\\"+name;
+						string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
 						pmat = matOpen(filename.c_str(), "w");
 
 						/* 
@@ -380,7 +384,7 @@ int main(int argc, const char *argv[])
 				if(flag){
 
 					resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-					equalizeHist(faceROI_resize, faceROI_resize);
+					//equalizeHist(faceROI_resize, faceROI_resize);
 
 					/* 
 					If first frame, add to set, otherwise, use temp matrix and 
