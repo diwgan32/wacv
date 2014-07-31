@@ -92,7 +92,8 @@ int main(int argc, const char *argv[])
 		xml_document<> doc;
 
 		/*Load sigsets*/
-		std::ifstream file("mbgcsigsets\\video_hd_frontal_session1.xml"); //Note: face_walking_video is UTD target sigset
+
+	std::ifstream file("mbgcsigsets\\video_hd_frontal_session1.xml"); //Note: face_walking_video is UTD target sigset
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		file.close();
@@ -143,7 +144,7 @@ int main(int argc, const char *argv[])
 
 			VideoCapture capture;
 			capture.open("C:\\MBGC\\FaceVisibleVideoClips\\"+target_names.at(ID));
-			double scale = (double)320/capture.get(CV_CAP_PROP_FRAME_WIDTH);
+			double scale = (double)640/capture.get(CV_CAP_PROP_FRAME_WIDTH);
 
 
 
@@ -154,9 +155,12 @@ int main(int argc, const char *argv[])
 				if (frame.empty())
 				{
 					// Only write data if enough frames were collected
-					if(numberOfFramesCollected > 10){
+					if(numberOfFramesCollected > numSegments){
+					
 
 						g = reset(setOfAllFramesCollected, g, numSegments);
+					
+					
 						MATFile *pmat;
 						mxArray *pa1;
 
@@ -168,7 +172,7 @@ int main(int argc, const char *argv[])
 							}
 						}
 						pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
-						string filename = "Segments\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
+						string filename = "Segments_MBGC\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
 						pmat = matOpen(filename.c_str(), "w");
 
 						/* 
@@ -205,7 +209,7 @@ int main(int argc, const char *argv[])
 
 
 						pa1 = mxCreateDoubleMatrix(400, numberOfFramesCollected, mxREAL);
-						filename = "Subjects\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
+						filename = "Subjects_MBGC\\"+itos(ID)+"-"+name.substr(0, 9)+".mat";
 						pmat = matOpen(filename.c_str(), "w");
 
 						double * data1;
@@ -234,6 +238,7 @@ int main(int argc, const char *argv[])
 
 						delete data1;
 						delete data2;
+					
 					}
 					break;
 				}
@@ -252,7 +257,7 @@ int main(int argc, const char *argv[])
 
 				// Find faces
 				detections_num = cascade_gpu.detectMultiScale(resized_gpu, facesBuf_gpu,
-					1.1, 2, Size(10, 10));
+					1.1, 2, Size(15, 15));
 				facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 				resized_gpu.download(resized_cpu);
 
@@ -264,19 +269,19 @@ int main(int argc, const char *argv[])
 				for (int i = 0; i < detections_num; ++i)
 				{
 					Point c1;
-					c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale);
-					c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale);
+					c1.x = (faces_downloaded.ptr<cv::Rect>()[i].x)*(1/scale)-faces_downloaded.ptr<cv::Rect>()[i].width*.03;
+					c1.y = (faces_downloaded.ptr<cv::Rect>()[i].y)*(1/scale)-faces_downloaded.ptr<cv::Rect>()[i].height*.03;
 
 					Point c2;
 
-					c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale);
-					c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale);
+					c2.x = (faces_downloaded.ptr<cv::Rect>()[i].x+faces_downloaded.ptr<cv::Rect>()[i].width)*(1/scale)*1.03;
+					c2.y = (faces_downloaded.ptr<cv::Rect>()[i].y+faces_downloaded.ptr<cv::Rect>()[i].height)*(1/scale)*1.03;
 					if((faces_downloaded.ptr<cv::Rect>()[i].width) < 60 && 
 
-						faces_downloaded.ptr<cv::Rect>()[i].x < 250){
+						faces_downloaded.ptr<cv::Rect>()[i].x < 500 && faces_downloaded.ptr<cv::Rect>()[i].y < 240){
 
 
-							rectangle(resized_cpu, faces_downloaded.ptr<cv::Rect>()[i], Scalar(255), 1, 8, 0);
+							rectangle(frame_cpu, c1, c2, Scalar(255), 1, 8, 0);
 							faceROI = resized_cpu( faces_downloaded.ptr<cv::Rect>()[i] );
 							flag = true;
 					}
@@ -307,7 +312,7 @@ int main(int argc, const char *argv[])
 					makeInitialSegmentsFlag = false;
 
 					// If 10 frames have been collected, create segments
-					if(numberOfFramesCollected == 10){
+					if(numberOfFramesCollected == numSegments){
 						g = seg(setOfAllFramesCollected, numSegments);
 
 					}
@@ -328,7 +333,7 @@ int main(int argc, const char *argv[])
 				tm.stop();
 				double detectionTime = tm.getTimeMilli();
 				double fps = 1000 / detectionTime;
-				imshow("result", resized_cpu);
+				imshow("result", frame_cpu);
 
 				if(waitKey(5) == 27)
 					return 0;
