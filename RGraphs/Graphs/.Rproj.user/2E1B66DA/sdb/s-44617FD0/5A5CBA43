@@ -1,0 +1,17 @@
+{
+    "contents" : "library(ROCR);\n\nfor(n in 1:24){\n  \n  str = paste(\"..\\\\..\\\\Results\\\\\", n, \"\\\\SimMat.txt\", sep=\"\");\n  labels = read.table(str, sep = \"\\n\");\n  \n  str = paste(\"..\\\\..\\\\Results\\\\\", n, \"\\\\SimMat1.txt\", sep=\"\");\n  predi = read.table(str, sep = \"\\n\");\n  \n  pred <- prediction(predi, labels);\n  perf <- performance(pred, \"tpr\", \"fpr\");\n  \n  plot(perf, xlab = \"False alarm rate\", ylab = \"Verification Rate\")\n  cutoffs <- data.frame(fpr=perf@x.values[[1]], \n                        tpr=perf@y.values[[1]])\n  \n  data2 <- subset(cutoffs, fpr>=.1);\n  \n  print(data2[1, \"tpr\"])\n}\n\n",
+    "created" : 1407031300691.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1041974294",
+    "id" : "5A5CBA43",
+    "lastKnownWriteTime" : 1407034674,
+    "path" : "C:/wacv/RGraphs/Graphs/gen_fpr_list.R",
+    "project_path" : "gen_fpr_list.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

@@ -1,0 +1,17 @@
+{
+    "contents" : "library(Hmisc)\n\nlabels = read.table(\"list.txt\")\norder.thing = order(labels$V2);\nlabels$V2 <- labels$V2[order.thing];\nlabels$V1 <- labels$V1[order.thing];\ndotchart2(labels$V2,labels=labels$V1,cex=.7, horizontal=FALSE, dotsize = 2, lines = FALSE, pch = 8,\n         main=\"Sensitivity Analysis\", \n         xlab=\"Verification Rate\")",
+    "created" : 1407034396641.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3043406713",
+    "id" : "5E41E0B5",
+    "lastKnownWriteTime" : 1407037404,
+    "path" : "C:/wacv/RGraphs/Graphs/dot_graph.R",
+    "project_path" : "dot_graph.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

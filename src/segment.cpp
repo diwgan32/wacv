@@ -1,14 +1,18 @@
 #include "includes.h"
 #include "Group.h"
-
+#include "utils.h"
 using namespace cv;
 using namespace std;
-
+template <class T>
+bool contains(const std::vector<T> &vec, const T &value)
+{
+	return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
 
 /* 
- * Function to determine initial groupings of frames
- * As frames are generated, addFrames() will be used 
- * to incorporate them into the groupings
+* Function to determine initial groupings of frames
+* As frames are generated, addFrames() will be used 
+* to incorporate them into the groupings
 */
 
 Groupings myKMeans(Mat Y, int k){
@@ -44,46 +48,61 @@ Groupings myKMeans(Mat Y, int k){
 	double accdist = 0.0;
 
 	int besti = 0;
-
+	int count = 0;
 	if(Y.rows >= k){
 		while (cand.size() < k){
+			count++;
 			for(int i=0; i<Y.rows; i++){
+				
+				if(!contains(cand, i)){
+					accdist = 1;
+					
+					for(int j = 0; j<cand.size(); j++){
+						accdist = accdist * dist.at<double>(std::min(i, cand.at(j)), std::max(i, cand.at(j)));
+					}
 
-				if(tbl.at(i) == 0) continue;
-				accdist = 1;
-
-				for(int j = 0; j<cand.size(); j++){
-					accdist = accdist * dist.at<double>(std::min(i, cand.at(j)), std::max(i, cand.at(j)));
-				}
-
-				if(accdist > maxdist){
-					maxdist = accdist;
-					besti = i;
+					if(accdist > maxdist){
+						maxdist = accdist;
+						besti = i;
+					}
 				}
 
 			}
 
+			if(!contains(cand, besti)){
 			cand.push_back(besti);
 			tbl.at(besti) = 0;
+			}
+			if(count > 10){
+				for(int z = 0; z<Y.rows; z++){
+					if(!contains(cand, z)){
+						cand.push_back(z);
+					}
+				}
+			}
 		}
 	}
 
 
 	Groupings g;
+	Mat temp;
 	g.segments = new vector<int>[k];
 	for(int i = 0; i<k; i++){
+		
 		g.count.push_back(0);
 	}
+
 	int bestj = 0;
 	double minD = 10000;
 	double D = 0;
-	Mat temp;
+
 	for(int i = 0; i<Y.rows; i++){
 		minD = INT_MAX;
 		bestj = 0;
 		for(int j = 0; j<k; j++){
 			if(i == cand.at(j)){
 				temp = Y.row(i);
+
 				transpose(temp, temp);
 				g.centers.push_back(temp);
 				bestj = j;
@@ -95,19 +114,19 @@ Groupings myKMeans(Mat Y, int k){
 				bestj = j;
 			}
 		}
-		
+
 		g.segments[bestj].push_back(i);
-	
-		g.count.at(bestj)+=1;
+
+
 	}
 
 	return g;
 }
 
 /*
- * Because the addFrames() function moves the centroids,
- * the groupings need to be redetermined as per the 
- * new centroids
+* Because the addFrames() function moves the centroids,
+* the groupings need to be redetermined as per the 
+* new centroids
 */
 Groupings reset(Mat data, Groupings g, int k){
 	double dist = 0;
@@ -117,11 +136,13 @@ Groupings reset(Mat data, Groupings g, int k){
 		g.segments[j].clear();
 		g.segments[j].reserve(data.cols/(k+1));
 	}
+
 	for(int i = 0; i<data.cols; i++){
 		dist = 0;
 		mindist = 10000.0;
 		bestj = 0;
 		for(int j = 0; j<k; j++){
+
 			dist = norm(data.col(i)-g.centers.at(j), 4);
 			//cout << dist << endl;
 			if(dist<mindist){
@@ -135,8 +156,8 @@ Groupings reset(Mat data, Groupings g, int k){
 }
 
 /*
- * Add a set of 4 frames to the partitions as per the
- * mini-batch k-means algorithm
+* Add a set of 4 frames to the partitions as per the
+* mini-batch k-means algorithm
 */
 
 Groupings addFrame(Groupings g, Mat frame, int frameid, int k){
@@ -206,7 +227,7 @@ double scatter(Mat data, Groupings g, int k){
 }
 
 /*
- * Determine the initial partitions
+* Determine the initial partitions
 */
 Groupings seg(Mat ImgData, int k){
 
@@ -230,8 +251,8 @@ Groupings seg(Mat ImgData, int k){
 
 
 /* 
- * Utility function that returns a set of matrices,
- * each one with the same pose and illumination.
+* Utility function that returns a set of matrices,
+* each one with the same pose and illumination.
 */
 
 vector<Mat> splitBySegment(Mat data, Groupings g){

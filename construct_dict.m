@@ -1,71 +1,94 @@
-function [printD, printPINVD] = construct_dict(SubjectData, Segments, params)
+function construct_dict(dictsize, K, dims)
 
-clear;
-clc;
 
 addpath C:\FaceRecognition_YiChen_ECCV12\tools
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ksvdbox13
 addpath C:\FaceRecognition_YiChen_ECCV12\tools\ompbox10
 
-K = params(1);
-G = cell(K);
-    
+iternum = 20;
+subject_idx = 481;
+var = dir('Subjects\*.mat');
+
+G = cell(subject_idx, K);
+for i=1:length(var),
+    G = cell(subject_idx, K);
+    mname = strcat('Subjects\', var(i).name);
+    load (mname);
+    mname = strcat('Segments\', var(i).name);
+    load(mname);
+    G = cell(subject_idx, K);
+    img_gallery = [];
+    index_gallery = [];
+    runidx = 1;
+    mname = var(i).name;
     for j=1:K,
         for k=1:size(Segments, 2),
-         if Segments(j, k) ~= -1,
-                G{i, j} = [G{j} SubjectData(:, (Segments(j, k))+1)];
-         end
+            if Segments(j, k) ~= -1,
+                if Segments(j, k)+1 > size(SubjectData, 2),
+                    G{i, j} = [G{i, j} SubjectData(:, size(SubjectData, 2))];
+                else
+                    G{i, j} = [G{i, j} SubjectData(:, (Segments(j, k))+1)];
+                end
+                
+            end
         end
         
         if size(G{i,j},2) < 32
             
-            G{j} = [G{j} gitter(G{j},20,20,32)];
-          
+            G{i,j} = [G{i,j} gitter(G{i,j},sqrt(dims), sqrt(dims),32)];
+            
         end
     end
-
-
-        
-        
-img_gallery = [];
-index_gallery = [];
-runidx = 1;
-
-    for j = 1:K
-        img_gallery = [img_gallery G{j}];
-        index_gallery = [index_gallery repmat(runidx,1,size(G{j},2))];
+    
+    for j=1:K,
+        img_gallery = [img_gallery G{i,j}];
+        index_gallery = [index_gallery repmat(runidx,1,size(G{i,j},2))];
         runidx = runidx + 1;
     end
+    
+    clear G;
+    
+    Dict = mp_train(img_gallery, index_gallery, dictsize, iternum);
+    printD = [];
+    printPINVD = [];
+    
+    for j = 1:K
+        printD = [printD Dict.D{j}];
+    end
+    printPINVD = pinv(printD);
+    
+    k=strfind(mname, '.');
+    
+  
+    if isempty(strfind(mname, '-')),
+    filename = strcat('Dictionaries\', mname(1, 1:9), '.bin');
+    fid = fopen(filename, 'w');
+    fwrite(fid, printD, 'double');
+    fclose(fid);
+    filename = strcat('InverseDictionaries\', mname(1, 1:9), '.bin');
+    fid = fopen(filename, 'w');
+    fwrite(fid, printPINVD, 'double');
+    fclose(fid);
+    
+    else
+         filename = strcat('Dictionaries\', mname(1, strfind(mname, '-')+1:k-1), '.bin');
+    fid = fopen(filename, 'w');
+    fwrite(fid, printD, 'double');
+    fclose(fid);
+    filename = strcat('InverseDictionaries\', mname(1, strfind(mname, '-')+1:k-1), '.bin');
+    fid = fopen(filename, 'w');
+    fwrite(fid, printPINVD, 'double');
+    fclose(fid);
+    end
+        
+    
+end
+
+
+
+
 
 
 clear G;
-
-dictsize = params(2)
-iternum = params(2)
-
-fprintf('Start training dictionary..\n');
-
-Dict = mp_train(img_gallery, index_gallery, dictsize, iternum);
-
-Dict_prime.D = []; % sequence level dictionary
-Dict_prime.pinvD = []; % sequence level dictionary
-
-    for j = 1:K
-        Dict_prime.D = [Dict_prime.D Dict.D{j}];
-    end
-    %Dict_prime.D{i} = [Dict.D{3*(i-1)+1} Dict.D{3*(i-1)+2} Dict.D{3*(i-1)+3}];
-    Dict_prime.pinvD = pinv(Dict_prime.D);
-
-
-
-printD = [];
-printPINVD = [];
-
-    printD = Dict_prime.D;
-
-
-    printPINVD = Dict_prime.pinvD;
-
-
 
 end
