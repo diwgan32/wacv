@@ -472,7 +472,7 @@ int main(int argc, const char *argv[])
 		{
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
-		double detectionTime  = 0;
+
 		while(target_count < target_names.size()){
 			cout << target_count << "\t";
 			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
@@ -517,12 +517,8 @@ int main(int argc, const char *argv[])
 						mxDestroyArray(subjectData);
 
 						
-						TickMeter tm;
-						tm.start();
-						double sim = image_test(data, D, pinvD);
 
-						tm.stop();
-						detectionTime += tm.getTimeMilli()/1000;
+						double sim = image_test(data, D, pinvD);
 						if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
 							fout << "1 " << endl;
 							fout1 << 20-sim << endl;
@@ -538,9 +534,6 @@ int main(int argc, const char *argv[])
 
 		}
 
-		ofstream timeFout("time.txt");
-		timeFout << detectionTime << endl;
-		timeFout.close();
 		fout1.close();
 		fout.close();
 	}
