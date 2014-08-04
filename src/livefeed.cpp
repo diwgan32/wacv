@@ -127,27 +127,27 @@ int main(int argc, const char *argv[])
 					count++;
 				}
 			}
-			
+
 			matClose(pMat);
-			
+
 			delete data1;
-			
+
 			mxDestroyArray(subjectData);
-			
+
 			Groupings g;
-				
+
 			g = seg(data.colRange(Range(0, 10)), numSegments);
-		
+
 			int numberOfFramesCollected = 10;
-			
+
 			while(numberOfFramesCollected+4 < numFrames){
-				
+
 				numberOfFramesCollected += 4;
 				g = addFrame(g, data.colRange(Range(numberOfFramesCollected-4, numberOfFramesCollected)), numberOfFramesCollected, numSegments);
 			}
 
 			g = reset(data, g, numSegments);
-		
+
 			int maxnum = 0;
 			for(int j = 0; j<numSegments; j++){
 
@@ -155,11 +155,11 @@ int main(int argc, const char *argv[])
 					maxnum = g.segments[j].size();
 				}
 			}
-		
+
 			mxArray * pa1 = mxCreateDoubleMatrix(numSegments, maxnum, mxREAL);
 			string filename = "Segments\\"+name;
 			pMat  = matOpen(filename.c_str(), "w");
-			
+
 			/* 
 			* Since segment data is not an exact rectangular
 			* array, all the holes in the data are filled
@@ -179,7 +179,7 @@ int main(int argc, const char *argv[])
 					count++;
 				}
 			}
-			
+
 			memcpy((void *)(mxGetPr(pa1)), data2, sizeof(data2)*maxnum*numSegments);
 			int status = matPutVariable(pMat, "Segments", pa1);
 			if (status != 0) {
@@ -220,10 +220,10 @@ int main(int argc, const char *argv[])
 			numberOfVideosToTrain++;
 		}
 		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
-		
 
 
-	
+
+
 
 
 		//Loop through target names
@@ -252,7 +252,7 @@ int main(int argc, const char *argv[])
 					// Only write data if enough frames were collected
 					if(numberOfFramesCollected > 10){
 
-						
+
 						MATFile *pmat;
 						mxArray *pa1;
 
@@ -338,10 +338,10 @@ int main(int argc, const char *argv[])
 				if(flag){
 
 					resize(faceROI, faceROI_resize, Size(sqrt((double)ROWS), sqrt((double)ROWS)), 0, 0, 1);
-					
+
 					if(isHist){
-					equalizeHist(faceROI_resize, faceROI_resize);
-					
+						equalizeHist(faceROI_resize, faceROI_resize);
+
 					}
 					/* 
 					If first frame, add to set, otherwise, use temp matrix and 
@@ -398,9 +398,9 @@ int main(int argc, const char *argv[])
 		int target_count = 0;
 
 		if ((dir = opendir ("Subjects\\")) != NULL) {
-			
+
 			while ((ent = readdir (dir)) != NULL) {
-				
+
 				name = ent->d_name;
 				if(name.compare(".") != 0 && name.compare("..") != 0 ) {
 					target_names.push_back(name.substr(0, 9));
@@ -428,7 +428,51 @@ int main(int argc, const char *argv[])
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
 
+		file.open("utdsigsets//face_walking_video_1.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
 
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+
+		file.open("utdsigsets//face_walking_video_2.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
+
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+		file.open("utdsigsets//face_walking_video_3.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
+
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+
+
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+		double detectionTime  = 0;
 		while(target_count < target_names.size()){
 			cout << target_count << "\t";
 			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
@@ -439,42 +483,54 @@ int main(int argc, const char *argv[])
 			while(query_count < query_names.size()){
 
 				if(target_names.at(target_count).compare(query_names.at(query_count)) != 0){
-					if(!contains(target_names, query_names.at(query_count))){
-						query_count++;
-						continue;
-					}
+
 					MATFile *pMat;
 					pMat = matOpen(("Subjects\\"+query_names.at(query_count)+".mat").c_str(), "r");
-					mxArray * subjectData;
-					subjectData = matGetVariable(pMat, "SubjectData");
+					if(pMat == NULL){
+						if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
+							fout << "1 " << endl;
+							fout1 << -10 << " "<<endl;
+						}else{
+							fout << "0 " << endl;
+							fout1 << -10 << " " <<endl;
+						}
+						query_count++;
+					}else{
+						mxArray * subjectData;
+						subjectData = matGetVariable(pMat, "SubjectData");
 
-					int numFrames = mxGetN(subjectData);
-					double * data1 = new double[ROWS*numFrames];
-					memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*ROWS*numFrames);
+						int numFrames = mxGetN(subjectData);
+						double * data1 = new double[ROWS*numFrames];
+						memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*ROWS*numFrames);
 
-					int count = 0;
-					Mat data(ROWS, numFrames, CV_64F);
-					for(int i = 0; i<numFrames; i++){
-						for(int j = 0; j<ROWS; j++){
-							data.at<double>(j, i) = data1[count];
-							count++;
+						int count = 0;
+						Mat data(ROWS, numFrames, CV_64F);
+						for(int i = 0; i<numFrames; i++){
+							for(int j = 0; j<ROWS; j++){
+								data.at<double>(j, i) = data1[count];
+								count++;
+							}
+						}
+
+						matClose(pMat);
+						delete data1;
+						mxDestroyArray(subjectData);
+
+						
+						TickMeter tm;
+						tm.start();
+						double sim = image_test(data, D, pinvD);
+
+						tm.stop();
+						detectionTime += tm.getTimeMilli()/1000;
+						if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
+							fout << "1 " << endl;
+							fout1 << 20-sim << endl;
+						}else{
+							fout << "0 " << endl;
+							fout1 << 20-sim << endl;
 						}
 					}
-
-					matClose(pMat);
-					delete data1;
-					mxDestroyArray(subjectData);
-
-
-					double sim = image_test(data, D, pinvD);
-					if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
-						fout << "1 " << endl;
-						fout1 << 20-sim << endl;
-					}else{
-						fout << "0 " << endl;
-						fout1 << 20-sim << endl;
-					}
-
 				}
 				query_count++;
 			}
@@ -482,6 +538,9 @@ int main(int argc, const char *argv[])
 
 		}
 
+		ofstream timeFout("time.txt");
+		timeFout << detectionTime << endl;
+		timeFout.close();
 		fout1.close();
 		fout.close();
 	}
@@ -492,12 +551,61 @@ int main(int argc, const char *argv[])
 
 /*
 int choice = atoi(argv[1]);
-	int ROWS = atoi(argv[2]);
-	bool isHist = false;
+int ROWS = atoi(argv[2]);
+bool isHist = false;
 
-	if(string(argv[3]).compare("-hist") == 0){
-		isHist = true;
-	}
+if(string(argv[3]).compare("-hist") == 0){
+isHist = true;
+}
 
-	int numSegments = atoi(argv[4]);
-	*/
+int numSegments = atoi(argv[4]);
+*/
+
+/*
+
+
+		file.open("utdsigsets//face_walking_video_1.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
+
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+
+		file.open("utdsigsets//face_walking_video_2.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
+
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+		file.open("utdsigsets//face_walking_video_3.xml");
+		buffer << file.rdbuf();
+		file.close();
+		content = (buffer.str());
+		doc.parse<0>(&content[0]);
+
+		pRoot = doc.first_node();
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+
+
+
+		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		{
+			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+		}
+		*/

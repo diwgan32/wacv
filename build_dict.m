@@ -9,36 +9,28 @@ addpath C:\FaceRecognition_YiChen_ECCV12\tools\ompbox10
 
 
 
-subject_idx = 481;
+
 
 K = 3;
 
 
-dictsize = 5;
+dictsize = 10;
 iternum = 20;
+subject_idx = 481;
+var = dir('Subjects\*.mat');
 
 G = cell(subject_idx, K);
-for i=1:subject_idx,
+for i=1:length(var),
     G = cell(subject_idx, K);
-
-    var = strcat('Subjects1\',int2str(i-1),'-*********.mat');
-    d = dir(var);
-    var = strcat('Subjects1\', d.name);
-    if strcmp(var, 'Subjects1\') == 1,
-        continue;
-    end
-    
-    load (var);
-    
-    var = strcat('Segments1\',int2str(i-1),'-*********.mat');
-    d = dir(var);
-    var = strcat('Segments1\',d.name);
-    load(var);
+    mname = strcat('Subjects\', var(i).name);
+    load (mname);
+    mname = strcat('Segments\', var(i).name);
+    load(mname);
     G = cell(subject_idx, K);
     img_gallery = [];
     index_gallery = [];
     runidx = 1;
-    
+    mname = var(i).name;
     for j=1:K,
         for k=1:size(Segments, 2),
             if Segments(j, k) ~= -1,
@@ -75,13 +67,13 @@ for i=1:subject_idx,
     end
     printPINVD = pinv(printD);
     
-    k=strfind(var, '.');
+    k=strfind(mname, '.');
     
-    filename = strcat('Dictionaries\', var(1, strfind(var, '-')+1:k-1), '.bin');
+    filename = strcat('Dictionaries\', mname(1, strfind(mname, '-')+1:k-1), '.bin');
     fid = fopen(filename, 'w');
     fwrite(fid, printD, 'double');
     fclose(fid);
-    filename = strcat('InverseDictionaries\', var(1, strfind(var, '-')+1:k-1), '.bin');
+    filename = strcat('InverseDictionaries\', mname(1, strfind(mname, '-')+1:k-1), '.bin');
     fid = fopen(filename, 'w');
     fwrite(fid, printPINVD, 'double');
     fclose(fid);
