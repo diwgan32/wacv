@@ -55,7 +55,7 @@ bool contains(const std::vector<T> &vec, const T &value)
 
 int main(int argc, const char *argv[])
 {
-	
+
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice()); //Load GPU
 
@@ -67,7 +67,7 @@ int main(int argc, const char *argv[])
 
 
 
-	
+
 	/*Initialize matrices*/
 	Mat frame, frame_cpu, gray_cpu, resized_cpu, faces_downloaded, faceROI, faceROI_resize;
 	vector<Rect> facesBuf_cpu;
@@ -93,7 +93,7 @@ int main(int argc, const char *argv[])
 
 		/*Load sigsets*/
 
-	std::ifstream file("mbgcsigsets\\video_hd_frontal_session1.xml"); //Note: face_walking_video is UTD target sigset
+		std::ifstream file("mbgcsigsets\\video_hd_frontal_session1.xml"); //Note: face_walking_video is UTD target sigset
 		std::stringstream buffer;
 		buffer << file.rdbuf();
 		file.close();
@@ -114,7 +114,7 @@ int main(int argc, const char *argv[])
 			cout << string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(14) << endl;
 		}
 		cout << "Number of videos to train: " << numberOfVideosToTrain << endl;
-		
+
 		/* Ask user to input which video in UTD dataset to start training on */
 		string startPos;
 		cout << "Enter starting video, or 0 to start at beginning: ";
@@ -156,11 +156,11 @@ int main(int argc, const char *argv[])
 				{
 					// Only write data if enough frames were collected
 					if(numberOfFramesCollected > numSegments){
-					
+
 
 						g = reset(setOfAllFramesCollected, g, numSegments);
-					
-					
+
+
 						MATFile *pmat;
 						mxArray *pa1;
 
@@ -176,9 +176,9 @@ int main(int argc, const char *argv[])
 						pmat = matOpen(filename.c_str(), "w");
 
 						/* 
-						 * Since segment data is not an exact rectangular
-						 * array, all the holes in the data are filled
-						 * with -1s.
+						* Since segment data is not an exact rectangular
+						* array, all the holes in the data are filled
+						* with -1s.
 						*/
 						double * data2;
 						int count = 0;
@@ -238,7 +238,7 @@ int main(int argc, const char *argv[])
 
 						delete data1;
 						delete data2;
-					
+
 					}
 					break;
 				}
@@ -247,7 +247,7 @@ int main(int argc, const char *argv[])
 				tm.start();
 #pragma region ACCUMULATE_FRAMES
 				frame.copyTo(frame_cpu);
-			
+
 				frame_gpu.upload(frame);
 
 				convertAndResize(frame_gpu, gray_gpu, resized_gpu, scale);
@@ -262,9 +262,9 @@ int main(int argc, const char *argv[])
 				resized_gpu.download(resized_cpu);
 
 				/*
-				 Loop through every single face. Important to note
-				 that only the last face on the list will be
-				 taken into account
+				Loop through every single face. Important to note
+				that only the last face on the list will be
+				taken into account
 				*/
 				for (int i = 0; i < detections_num; ++i)
 				{
@@ -291,7 +291,7 @@ int main(int argc, const char *argv[])
 				if(flag){
 
 					resize(faceROI, faceROI_resize, Size(20, 20), 0, 0, 1);
-					
+
 
 					/* 
 					If first frame, add to set, otherwise, use temp matrix and 
@@ -328,7 +328,7 @@ int main(int argc, const char *argv[])
 
 				}
 #pragma endregion
-				
+
 				/* Performance metrics */
 				tm.stop();
 				double detectionTime = tm.getTimeMilli();
@@ -392,7 +392,7 @@ int main(int argc, const char *argv[])
 			cout << target_count << "\t";
 			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
 			Mat pinvD = readBin(("InverseDictionaries\\"+target_names.at(target_count)+".bin").c_str(), COLS, ROWS);
-			
+
 			int query_count = 0;
 
 			while(query_count < query_names.size()){
@@ -403,11 +403,11 @@ int main(int argc, const char *argv[])
 						continue;
 					}
 					MATFile *pMat;
-					
+
 					pMat = matOpen(("Subjects\\"+query_names.at(query_count)+".mat").c_str(), "r");
 					mxArray * subjectData;
 					subjectData = matGetVariable(pMat, "SubjectData");
-					
+
 					int numFrames = mxGetN(subjectData);
 					double * data1 = new double[400*numFrames];
 					memcpy(data1, (void *)(mxGetPr(subjectData)), sizeof(data1)*400*numFrames);
