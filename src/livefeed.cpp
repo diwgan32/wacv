@@ -408,8 +408,8 @@ int main(int argc, const char *argv[])
 				}
 			}
 		}
-
 		vector<string> query_names;	
+		
 		xml_document<> doc;
 		std::ifstream file("utdsigsets//face_walking_video_0.xml");
 		std::stringstream buffer;
@@ -428,50 +428,50 @@ int main(int argc, const char *argv[])
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
 
-		file.open("utdsigsets//face_walking_video_1.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+		xml_document<> doc1;
+		std::ifstream file1("utdsigsets//face_walking_video_1.xml");
+		std::stringstream buffer1;
+		buffer1 << file1.rdbuf();
+		file1.close();
+		std::string content1(buffer1.str());
+		doc1.parse<0>(&content1[0]);
 
-		pRoot = doc.first_node();
+		xml_node<> *pRoot1 = doc1.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		for(xml_node<> *pNode=pRoot1->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
 		{
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
 
-		file.open("utdsigsets//face_walking_video_2.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+		xml_document<> doc2;
+		std::ifstream file2("utdsigsets//face_walking_video_2.xml");
+		std::stringstream buffer2;
+		buffer2 << file2.rdbuf();
+		file2.close();
+		std::string content2(buffer2.str());
+		doc2.parse<0>(&content2[0]);
 
-		pRoot = doc.first_node();
+		xml_node<> *pRoot2 = doc2.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		for(xml_node<> *pNode=pRoot2->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
 		{
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
-		file.open("utdsigsets//face_walking_video_3.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+		xml_document<> doc3;
+		std::ifstream file3("utdsigsets//face_walking_video_3.xml");
+		std::stringstream buffer3;
+		buffer3 << file3.rdbuf();
+		file3.close();
+		std::string content3(buffer3.str());
+		doc3.parse<0>(&content3[0]);
 
-		pRoot = doc.first_node();
+		xml_node<> *pRoot3 = doc3.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+		for(xml_node<> *pNode=pRoot3->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
 		{
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
 
-
-
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
-			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
-		}
 
 		while(target_count < target_names.size()){
 			cout << target_count << "\t";
@@ -516,7 +516,7 @@ int main(int argc, const char *argv[])
 						delete data1;
 						mxDestroyArray(subjectData);
 
-						
+
 
 						double sim = image_test(data, D, pinvD);
 						if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
@@ -557,48 +557,48 @@ int numSegments = atoi(argv[4]);
 /*
 
 
-		file.open("utdsigsets//face_walking_video_1.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+file.open("utdsigsets//face_walking_video_1.xml");
+buffer << file.rdbuf();
+file.close();
+content = (buffer.str());
+doc.parse<0>(&content[0]);
 
-		pRoot = doc.first_node();
+pRoot = doc.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
-			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
-		}
+for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+{
+query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+}
 
-		file.open("utdsigsets//face_walking_video_2.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+file.open("utdsigsets//face_walking_video_2.xml");
+buffer << file.rdbuf();
+file.close();
+content = (buffer.str());
+doc.parse<0>(&content[0]);
 
-		pRoot = doc.first_node();
+pRoot = doc.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
-			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
-		}
-		file.open("utdsigsets//face_walking_video_3.xml");
-		buffer << file.rdbuf();
-		file.close();
-		content = (buffer.str());
-		doc.parse<0>(&content[0]);
+for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+{
+query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+}
+file.open("utdsigsets//face_walking_video_3.xml");
+buffer << file.rdbuf();
+file.close();
+content = (buffer.str());
+doc.parse<0>(&content[0]);
 
-		pRoot = doc.first_node();
+pRoot = doc.first_node();
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
-			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
-		}
+for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+{
+query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+}
 
 
 
-		for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
-		{
-			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
-		}
-		*/
+for(xml_node<> *pNode=pRoot->first_node("biometric-signature"); pNode; pNode=pNode->next_sibling())
+{
+query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
+}
+*/
