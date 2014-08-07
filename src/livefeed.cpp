@@ -471,8 +471,8 @@ int main(int argc, const char *argv[])
 		{
 			query_names.push_back(string(pNode->first_node("presentation")->first_attribute("file-name")->value()).substr(21, 9));
 		}
-
-
+		double elapsed_secs = 0;
+		ofstream times;
 		while(target_count < target_names.size()){
 			cout << target_count << "\t";
 			Mat D = readBin(("Dictionaries\\"+target_names.at(target_count)+".bin").c_str(), ROWS, COLS);
@@ -517,8 +517,12 @@ int main(int argc, const char *argv[])
 						mxDestroyArray(subjectData);
 
 
-
+						clock_t begin = clock();
 						double sim = image_test(data, D, pinvD);
+						clock_t end = clock();
+						elapsed_secs += double(end - begin) / CLOCKS_PER_SEC;
+
+						
 						if(target_names.at(target_count).substr(0, 5).compare(query_names.at(query_count).substr(0, 5)) == 0){
 							fout << "1 " << endl;
 							fout1 << 20-sim << endl;
@@ -533,7 +537,9 @@ int main(int argc, const char *argv[])
 			target_count++;
 
 		}
-
+		times.open("times.txt");
+		times << elapsed_secs << endl;
+		times.close();
 		fout1.close();
 		fout.close();
 	}
